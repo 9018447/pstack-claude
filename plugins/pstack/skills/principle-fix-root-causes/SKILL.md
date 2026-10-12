@@ -1,23 +1,23 @@
 ---
 name: principle-fix-root-causes
-description: "Apply when debugging. Trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes."
+description: "调试时应用。把每个症状追到它的根本原因并在那里修掉；先复现，不断追问 why 直到触及根因，抵制用 nil 检查护栏把崩溃静音。"
 user-invocable: false
 ---
 
-# Fix Root Causes
+# 修复根本原因（Fix Root Causes）
 
-When debugging, do not fix symptoms. Trace every problem to its root cause and fix it there.
+调试时不要修症状。把每个问题追到它的根本原因，在那里修。
 
-**Why:** Symptom fixes accumulate. Each workaround makes the system harder to reason about, and the real bug remains. Root-cause fixes are slower upfront but reduce total debugging time.
+**为什么：**症状式修复会累积。每个变通方案都让系统更难推理，而真正的 bug 依然在。根本原因修复前期更慢，但能减少总调试时间。
 
-**Pattern:**
-- Reproduce first
-- Ask "why" until you hit the root cause
-- Do not add guards (adding a nil check to silence a crash is a symptom fix)
-- If a workaround needs a paragraph-long comment to justify it, the code is wrong (fix the code, not the comment)
-- Check for the pattern, not just the instance (grep for the same pattern, fix all instances)
-- When stuck, instrument. Don't guess (add logging, read the actual error)
+**模式：**
+- 先复现
+- 不断追问"为什么"，直到触及根本原因
+- 不要加护栏（加一个 nil 检查把崩溃静音，就是修症状）
+- 如果一个变通方案需要一整段注释来辩护，那说明代码是错的（修代码，不是修注释）
+- 检查模式而不只是实例（grep 同样的模式，修掉所有实例）
+- 卡住时就加观测，不要猜（加日志，读真实的错误）
 
-**Restart bugs: suspect state before code**
+**重启类 bug：先怀疑状态，再怀疑代码**
 
-When something "fails after restart," suspect stale persistent state first: config files, caches, lock files, serialized state. If clearing a state file restores behavior, prioritize state validation as the fix.
+当某样东西"重启后失败"时，先怀疑过期的持久化状态：配置文件、缓存、锁文件、序列化状态。如果清掉某个状态文件行为就恢复，就把状态校验作为修复的优先方案。

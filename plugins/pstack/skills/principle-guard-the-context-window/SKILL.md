@@ -1,16 +1,16 @@
 ---
 name: principle-guard-the-context-window
-description: "Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads."
+description: "当上下文正在被填满时应用：大输出、长文件、重复读取、扇出规划。把大块内容路由给 subagent；主线程里放摘要，不放原始负载。"
 user-invocable: false
 ---
 
-# Guard the Context Window
+# 守护上下文窗口（Guard the Context Window）
 
-The context window is finite and non-renewable within a session. Every token should be worth its cost.
+上下文窗口是有限的，且在会话内不可再生。每个 token 都要对得起它的成本。
 
-**Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
+**为什么：**上下文溢出会让推理质量劣化、产生压缩失真，并让进展停摆。
 
-**Pattern:**
-- **Isolate large payloads.** Route verbose outputs, screenshots, and large documents to subagents. The main context gets summaries, not raw data.
-- **Keep frequently used content inline.** Templates and references used on every invocation belong in the skill file, not in separate files that cost a read each time.
-- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.
+**模式：**
+- **隔离大负载。**把冗长的输出、截图和大文档路由给 subagent。主上下文拿摘要，不拿原始数据。
+- **让高频内容保持内联。**每次调用都要用的模板和参考应放进 skill 文件本身，而不是放在每次都要多花一次读取的单独文件里。
+- **规划阶段规模并封顶范围。**限制每阶段的文件数，设定轮次预算，把机制本身的成本算进去。

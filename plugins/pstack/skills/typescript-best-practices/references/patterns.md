@@ -1,10 +1,10 @@
-# TypeScript patterns
+# TypeScript 模式
 
-Code examples for each rule in `SKILL.md`. The underlying principles are language-agnostic. See the **type-system-discipline** and **boundary-discipline** principle skills.
+`SKILL.md` 中每条规则的代码示例。这些底层原则与具体语言无关。参见 **type-system-discipline** 与 **boundary-discipline** 这两个 principle skill。
 
-## Branded types
+## 品牌类型
 
-Brand primitives so they can't be mixed up. Validate once at the boundary. Downstream code trusts the type.
+给原始类型打上品牌标记，使它们不会被混用。在边界处校验一次。下游代码信任这个类型。
 
 ```ts
 type AgentId = string & { readonly __brand: "AgentId" };
@@ -19,11 +19,11 @@ function focusAgent(id: AgentId): void {
 }
 ```
 
-Match the `readonly __brand: 'X'` shape. Don't invent a new convention.
+与 `readonly __brand: 'X'` 的形状保持一致。不要另发明约定。
 
-## Discriminated unions
+## 可辨识联合
 
-Model variants with a literal discriminant. Every variant shares the field name and each variant's value is unique, so impossible combos can't be represented.
+用字面量判别字段为变体建模。所有变体共享同一个字段名，且每个变体的取值各不相同，因此不可能的组合无法被表示。
 
 ```ts
 // Don't. Boolean + optionals lets contradictory states exist.
@@ -36,13 +36,13 @@ type DiffState =
   | { kind: "error"; error: string };
 ```
 
-Pick one discriminant name (`kind`, `type`, `tag`) and stick to it.
+选定一个判别字段名（`kind`、`type`、`tag`）并坚持用它。
 
-## Constructive modeling
+## 构造式建模
 
-Build the type from parts that are all legal instead of restricting a loose type with runtime checks.
+用全都合法的部件直接构造出类型，而不是靠运行时检查去约束一个宽松类型。
 
-Non-empty, via a variadic tuple:
+非空，用可变长元组表示：
 
 ```ts
 type NonEmpty<T> = [T, ...T[]];
@@ -59,19 +59,19 @@ function pickWinner(entries: NonEmpty<string>): string {
 }
 ```
 
-Where a plain `T[]` arrives, narrow once with a guard. The fact then travels in the type:
+当拿到的只是普通 `T[]` 时，用守卫收窄一次。这个事实随后就会随类型一起传递：
 
 ```ts
 const isNonEmpty = <T>(arr: T[]): arr is NonEmpty<T> => arr.length > 0;
 ```
 
-Even length, as pairs:
+偶数长度，用成对（pairs）表示：
 
 ```ts
 type Pairs<T> = [T, T][];
 ```
 
-A time range, as start plus duration:
+时间区间，用 start 加时长表示：
 
 ```ts
 // Don't: a comment holds the invariant
@@ -81,17 +81,17 @@ type TimeRange = { start: Date; end: Date }; // start <= end
 type TimeRange = { start: Date; durationMs: number };
 ```
 
-Keep `durationMs` a plain number. Brand it (per Branded types) only if a raw number could be passed where a duration is expected, not by reflex. Pick the representation that makes the bad state unconstructable, then expose the reading you need on top (`pairs.flat()`, a `rangeEnd()` helper).
+让 `durationMs` 保持为普通 number。只有当裸 number 可能被传到期望时长的地方时才打品牌（按"品牌类型"一节的做法），不要条件反射地打。先选定一种让坏状态无法构造出来的表示，再在其上暴露你需要的读取方式（`pairs.flat()`、`rangeEnd()` helper）。
 
-## Simplest total type
+## 最简单的全类型
 
-Don't strengthen everything. Keep `T[]` when every operation on it is total:
+不要什么都加强。只要对 `T[]` 的每个操作都是全（total）的，就保留 `T[]`：
 
 ```ts
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0); // [] is 0, fine
 ```
 
-Strengthen when the loose type forces a lie at a use site. The tells are `!`, `arr[0] as T`, and a "should never happen" throw:
+只有当宽松类型在某个使用点逼你说谎时才加强。迹象是 `!`、`arr[0] as T`，以及"永远不该发生"的 throw：
 
 ```ts
 // Don't: partiality smuggled past the compiler
@@ -105,11 +105,11 @@ function newestSession(sessions: NonEmpty<Session>): Session {
 }
 ```
 
-Weakening the result to `Session | undefined` is the other total signature.
+把结果弱化为 `Session | undefined` 是另一种保持全（total）的签名。
 
-## `unknown` over `any`
+## 用 `unknown` 而非 `any`
 
-External data is always `unknown`. Narrow before use.
+外部数据一律是 `unknown`。使用前先收窄。
 
 ```ts
 // Don't
@@ -125,11 +125,11 @@ function handle(input: unknown) {
 }
 ```
 
-External sources include RPC payloads, `JSON.parse`, `postMessage`, IPC, file contents, environment variables, database results.
+外部来源包括 RPC 载荷、`JSON.parse`、`postMessage`、IPC、文件内容、环境变量、数据库结果。
 
-## Schemas before hand-rolled guards
+## 先 schema 后手写守卫
 
-Before writing a property-by-property type guard for external data, look for the repository's runtime schema library and existing schemas. Let one schema own validation and derive the TypeScript type from it. Do not maintain a schema, a duplicate interface, and a guard that can drift apart.
+在为外部数据手写逐属性的类型守卫之前，先找找仓库的运行时 schema 库和既有 schema。让一个 schema 独自负责校验，并从它派生 TypeScript 类型。不要同时维护一个 schema、一个重复的 interface 和一个守卫——它们会各自漂移。
 
 ```ts
 import { z } from "zod";
@@ -146,11 +146,11 @@ function parseUser(input: unknown): User {
 }
 ```
 
-Use `safeParse` when failure is an expected branch. Use the equivalent inference helper when the repository uses another schema library. Do not add a new schema dependency for one guard. This rule prefers the schema system the codebase already trusts.
+当失败是预期分支之一时使用 `safeParse`。如果仓库用的是别的 schema 库，就用它等价的类型推导 helper。不要为了一条守卫就新增一个 schema 依赖。本规则偏向代码库已经信任的那套 schema 体系。
 
-## No `as` casts
+## 不用 `as` 断言
 
-Every `as` is a potential runtime crash. Cast only after the type system has verified the claim.
+每个 `as` 都是一次潜在的运行时崩溃。只有类型系统验证过该声明之后才做转换。
 
 ```ts
 import { z } from "zod";
@@ -172,7 +172,7 @@ function parseUser(data: unknown): User {
 }
 ```
 
-When the type comes first, annotate the validator with the type it proves. The compiler then rejects a validator that proves less than the type. Remove `name` from the object below and the assignment fails to compile.
+当类型在前时，用该类型去标注校验器，标明它能证明什么。这样编译器会拒绝证明了比该类型更少的校验器。把下面这个对象中的 `name` 删掉，赋值语句就会编译失败。
 
 ```ts
 type User = { id: string; name: string };
@@ -180,22 +180,22 @@ type User = { id: string; name: string };
 const userSchema: z.ZodType<User> = z.object({ id: z.string(), name: z.string() });
 ```
 
-When refactoring an `as` out of existing code, identify why TypeScript can't infer:
+从既有代码中重构掉 `as` 时，先弄清 TypeScript 为什么推不出来：
 
-- Missing discriminant: add one, switch to a discriminated union.
-- Overly wide source type (e.g. `Record<string, unknown>`): narrow it.
-- Untyped boundary: parse with the schema that owns the shape. Add a schema only where none exists.
-- Genuinely inexpressible: use a branded type or `satisfies`.
+- 缺少判别字段：加一个，改用可辨识联合。
+- 源类型过宽（例如 `Record<string, unknown>`）：收窄它。
+- 无类型边界：用拥有该形状的 schema 解析。只在确实没有 schema 的地方新增 schema。
+- 确实无法表达：改用品牌类型或 `satisfies`。
 
-## Narrowing hierarchy
+## 类型收窄的优先级
 
-From best to last-resort:
+按从最优到最后手段排序：
 
-1. **Discriminated union switch / if.** Compiler narrows automatically.
-2. **`in` operator.** `"key" in obj` narrows to variants containing that key.
-3. **`typeof` / `instanceof`.** For primitives and class instances.
-4. **User-defined type guard.** When the above aren't enough.
-5. **`as` cast.** Only after validation.
+1. **可辨识联合的 switch / if。** 编译器自动收窄。
+2. **`in` 运算符。** `"key" in obj` 会收窄到含有该键的变体。
+3. **`typeof` / `instanceof`。** 用于原始值与类实例。
+4. **用户自定义类型守卫。** 当以上都不够用时。
+5. **`as` 断言。** 只在校验之后使用。
 
 ```ts
 function area(s: Shape): number {
@@ -204,9 +204,9 @@ function area(s: Shape): number {
 }
 ```
 
-## Type guards
+## 类型守卫
 
-A guard must actually verify the claim. A lying guard is worse than `as`.
+守卫必须真正验证它所声称的事情。说谎的守卫比 `as` 更糟。
 
 ```ts
 function isCircle(s: Shape): s is Shape & { kind: "circle" } {
@@ -214,11 +214,11 @@ function isCircle(s: Shape): s is Shape & { kind: "circle" } {
 }
 ```
 
-Prefer discriminant narrowing when possible.
+可能的话，优先使用判别字段收窄。
 
-## Exhaustiveness
+## 穷尽性
 
-In default arms, assign the discriminant to a `never`-typed local.
+在 default 分支里，把判别值赋给一个 `never` 类型的局部变量。
 
 ```ts
 // Value-returning switch
@@ -252,11 +252,11 @@ function handle(s: Shape): void {
 }
 ```
 
-Return-style in value-returning switches, void-style in statement switches.
+有返回值的 switch 用 return 风格，作语句用的 switch 用 void 风格。
 
-## `satisfies` over `as`
+## 用 `satisfies` 而非 `as`
 
-`satisfies` validates without widening literal types.
+`satisfies` 能校验值，同时不拓宽字面量类型。
 
 ```ts
 // Don't. Widens, loses literal types.
@@ -267,17 +267,17 @@ const config = { theme: "dark", cols: 3 } satisfies Config;
 // config.theme is "dark" (literal), not string
 ```
 
-## Boundary validation
+## 边界校验
 
-Validate once where data crosses in. Trust types inside. See the **boundary-discipline** principle skill.
+在数据跨入之处校验一次。内部信任类型。参见 **boundary-discipline** principle skill。
 
-- **Wire formats** (proto, JSON-RPC): parse with `ignoreUnknownFields` so forward-compatible changes don't break old clients.
-- **Persisted JSON:** versioned blob with a try/catch around the parse.
-- **Don't re-validate** deep in call chains.
+- **线上格式（wire format）**（proto、JSON-RPC）：解析时带上 `ignoreUnknownFields`，让前向兼容的变更不会破坏旧客户端。
+- **持久化的 JSON：** 带版本的 blob，在解析外面包一层 try/catch。
+- **不要**在调用链深处重复校验。
 
-## Schema-derived types
+## 由 schema 派生的类型
 
-When a `.proto`, OpenAPI spec, GraphQL schema, or database migration already defines a shape, derive from the generated types instead of duplicating them.
+当 `.proto`、OpenAPI 规范、GraphQL schema 或数据库迁移已经定义了形状时，从生成的类型派生，而不是复制一份。
 
 ```ts
 // Don't. Duplicate shape, drifts when the schema changes.
@@ -296,9 +296,9 @@ function renderChecks(s: Pick<ChecksMessage, "totalCount" | "checks">) {
 }
 ```
 
-Reach for `Pick`, `Omit`, `Parameters`, `ReturnType`, `Awaited`, `typeof` before writing a new interface.
+在写新 interface 之前，先用 `Pick`、`Omit`、`Parameters`、`ReturnType`、`Awaited`、`typeof`。
 
-## Object args
+## 对象参数
 
 ```ts
 // Don't. Swap two args, still compiles.
@@ -321,4 +321,4 @@ openFile({
 });
 ```
 
-Skip on hot paths: per-frame render, tokenizers, parsers, anything in a tight loop where the allocation cost matters.
+热路径上跳过这一规则：逐帧渲染、分词器、解析器，以及任何运行在紧凑循环里、分配开销举足轻重的代码。

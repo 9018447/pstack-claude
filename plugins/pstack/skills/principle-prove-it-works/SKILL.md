@@ -1,26 +1,26 @@
 ---
 name: principle-prove-it-works
-description: "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'"
+description: "完成任务之后、宣告完成之前应用。对照真实产物验证（运行功能、读取实际值、检查 diff），而不是代理指标、自我报告或“能编译”。"
 user-invocable: false
 ---
 
-# Prove It Works
+# 证明它有效（Prove It Works）
 
-Verify every task output by checking the real thing directly. Do not infer from proxies, self-reports, or "it compiles."
+对每个任务产出都直接检查真实之物来验证。不要从代理指标、自我报告或"能编译"来推断。
 
-**Why:** Unverified work has unknown correctness. Indirect verification (file mtimes, output freshness, agent self-reports, cached screenshots) feels cheaper than direct observation. Acting on a wrong inference costs far more than checking the source.
+**为什么：**未经验证的工作正确性未知。间接验证（文件 mtime、输出是否新鲜、agent 自我报告、缓存截图）感觉比直接观察便宜，但依据错误推断行动的代价远高于查证源头。
 
-Check the real thing, not a proxy:
-- Check process liveness directly, not indirectly through derived state
-- Read the actual value, not a cached or derived representation
-- When verification fails, suspect the observation method before suspecting the system
+检查真实之物，而不是代理：
+- 直接检查进程存活，而不是通过派生状态间接判断
+- 读实际值，而不是缓存或派生的表示
+- 验证失败时，先怀疑观察方法，再怀疑系统
 
-Verify the process as well as the outcome. A correct result can rest on a broken process, and a review that checks results passes it: a clause reconstructed from the user's paste instead of the durable record, a constraint honored by chance from a file never read. For each fact you relied on, name the record it came from and confirm that record is the one the project's rules point at.
+结果要验证，过程也要验证。正确的结果可能建立在一个坏掉的过程上，而只查结果的评审会放行它：一条从用户粘贴内容而非持久记录重建的条款，一条从未读过、只是碰巧被满足的约束。对你依赖的每一条事实，说出它来自哪条记录，并确认那条记录正是项目规则所指的那条。
 
-Red is a colour, not a measurement. A failing check proves the instrument only when the failure content is the disagreement you predicted. An exception, an empty collection against a non-empty literal, and a real mismatch all print red, so quote the assertion's diff (`Extra items in the right set`), never the assertion (`assert {...} == {...}`). A convergence probe keys on behavior only the new artifact can produce, never an identity field the old one also emits. A same-SHA restart lets old code report the new commit SHA.
+红色只是颜色，不是测量。失败的检查只有在失败内容正是你预判的那个不一致时，才算证明了检查本身。异常、空集合对上非空字面量、真实的不匹配，都会打印红色，所以要引用断言的 diff（`Extra items in the right set`），绝不要只引用断言本身（`assert {...} == {...}`）。收敛探针要锚定只有新产物才能产生的行为，绝不能锚定旧产物同样会输出的标识字段。同 SHA 的重启会让旧代码报告出新 commit 的 SHA。
 
-## Script the check when you can
+## 能脚本化就把检查脚本化
 
-The strongest proof is a deterministic script that re-runs the same comparison, not a one-time eyeball. Write the script, run it, and keep its output as an artifact a reviewer can re-run instead of trusting your word.
+最强的证明是一个能重跑同一比较的确定性脚本，而不是一次性的肉眼过目。写脚本、跑脚本，把输出作为产物保存，让评审者可以重跑，而不必相信你的口头担保。
 
-Keep the artifact visible for the human. Commit it only for large or complex work where the trail has to be auditable later, like a big port or migration (the **show-me-your-work** skill).
+让这份产物对人类可见。只有当工作量大或复杂、事后需要可审计的痕迹时（比如大型移植或迁移）才提交它（**show-me-your-work** skill）。

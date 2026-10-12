@@ -1,7 +1,7 @@
 ---
 name: what-did-i-get-done
-description: summarize authored commits over a user-chosen period
+description: 汇总用户自选时间段内本人创作的提交
 disable-model-invocation: true
 ---
 
-Invoke the `what-did-i-get-done` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `what-did-i-get-done` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

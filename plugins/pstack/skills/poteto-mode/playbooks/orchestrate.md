@@ -1,41 +1,41 @@
-### Orchestrate
+### 编排（Orchestrate）
 
-Resolve the driver skill through [poteto-mode's Non-negotiables](../SKILL.md#non-negotiables).
+通过 [poteto-mode 的 Non-negotiables](../SKILL.md#non-negotiables) 解析 driver skill。
 
-**You own the program, never the code. Author briefs, drain the queue, keep the frontier green, decide.** For a whole project handed to one standing coordinator chat: multi-day, many stacked PRs, dozens to hundreds of subagents, the human checking in twice a day instead of every five minutes. One task driven to a predicate is Autonomous run. One ambitious run needing a bespoke workflow is figure-it-out. Route here when the work outlives any single agent. Work one agent could finish inside the session's budget is not a program.
+**程序由你负责，代码绝不是。撰写 brief、清空队列、保持前沿全绿、做决断。** 适用于把整个项目交给一个常驻协调会话：多天、多个堆叠 PR、几十到几百个 subagent，人类一天来看两次而不是每五分钟看一次。把一个任务驱动到一个谓词属于 Autonomous run。一次需要定制工作流的雄心运行属于 figure-it-out。工作寿命超过任何单个 agent 时路由到这里。一个 agent 在会话预算内能做完的工作不是程序。
 
-Ceremony must scale with the program. On cheap near-identical units, collapse it as each section directs.
+仪式感必须随程序规模伸缩。在廉价且近乎相同的单元上，按各节的指示收缩。
 
-Three rules carry the rest.
+三条规则撑起其余一切。
 
-- Completions are queue events, not interrupts.
-- Every spawn and every resume carries the standing orders verbatim.
-- The brief is the product. A vague brief fails quietly, because a worker cannot ask you a question.
+- 完成是队列事件，不是中断。
+- 每次派生和每次 resume 都原样携带常设指令。
+- brief 就是产品。模糊的 brief 会悄悄失败，因为 worker 没法向你提问。
 
-#### Roles and placement
+#### 角色与布置
 
-- **Coordinator (this chat).** Frames, authors briefs, drains the inbox, owns the human report, makes judgment calls. It never authors or edits code. Conflicted merges, restacks, and code changes are always tasks. Mechanically landing a verified unit (fast-forward or clean cherry-pick of a worker's commit, then push) is bookkeeping the coordinator may do itself on repos where local git is cheap. Queueing finished work behind an idle stacker is how a deadline harvests nothing. The loop is agentic end to end. Agents are spawned, resumed, and drained only through the `Agent` tool. State reads and writes go through the `orch` CLI at drain points, one command in and one line out. The CLI never spawns, waits, or wakes anything.
-- **Sub-coordinator.** Durable, one per track, and only when the program exceeds what one coordinator's drains can manage. A track the coordinator can drain itself needs no middle layer. Each nested layer re-pays a full orientation preamble, and a blocking sub-coordinator hides its children while the parent idles. Owns its track's units and boards, authors its workers' briefs, spawns its own workers and verifiers where the runtime lets a subagent spawn one. Where it does not, it owns its track's units directly with the same review separation. Rolls up aggregates at wave boundaries. Never forwards raw child reports. Cap in-flight children at what one drain can process, roughly ten, as a rolling window. Never as blocking batches, which cost the slowest child of every batch.
-- **Worker / verifier.** Background subagents (`run_in_background: true`). Claude Code has no remote worker environment, so isolation is a worktree or branch per writer, not a separate machine. Runtime verification goes through the driver skill. The brief names its resolved skill path or exact commands. A subagent never sees this chat, so its brief inlines what it needs or points at repo and store paths. Prefer fewer, broader workers. One writer per worktree or branch (principle-separate-before-serializing-shared-state). Run a unit's verifier on a different model family from its worker.
+- **协调者（本会话）。** 定框、撰写 brief、清空收件箱、负责给人类的报告、做判断。绝不亲手写或改代码。撞到冲突的合并、restack、代码变更永远作为任务。机械落地一个已验证单元（对 worker 的提交做 fast-forward 或干净的 cherry-pick，然后 push）属于记账式操作，在本地 git 廉价的仓库上协调者可以自己做。把已完成的工作排在闲置的 stacker 后面，deadline 就会颗粒无收。整个循环端到端都是 agentic 的。agent 只通过 `Agent` 工具派生、resume 和清空。状态的读写在各清理点经 `orch` CLI 进行，一条命令进、一行结果出。CLI 绝不派生、等待或唤醒任何东西。
+- **子协调者。** 持久的，每条轨道一个，且只在程序超出单个协调者清理能力时才设。协调者自己清得动的轨道不需要中间层。每层嵌套都要重新支付一整套定位开销；阻塞式子协调者还会在父级空转时把它的孩子藏起来。它拥有本轨道的单元和看板，撰写其 worker 的 brief，在运行时允许 subagent 再派生的地方派生自己的 worker 和 verifier。不允许的地方，它以同样的审查分离直接拥有本轨道的单元。在波次边界汇总聚合数据。绝不转发原始子报告。在途孩子封顶在一次清理能处理的量，大约十个，作为滚动窗口。绝不用阻塞批次——那会让每批都付出最慢孩子的代价。
+- **Worker / verifier。** 后台 subagent（`run_in_background: true`）。Claude Code 没有远程 worker 环境，所以隔离就是每个写者一个工作树或分支，不是一台单独机器。运行时验证走 driver skill，brief 里写明其解析出的 skill 路径或确切命令。subagent 看不到本会话，所以它的 brief 要内联所需内容，或指向仓库和 store 路径。worker 宁少而宽。每个工作树或分支一个写者（principle-separate-before-serializing-shared-state）。单元的 verifier 跑在与 worker 不同的模型家族上。
 
-Depth stays at coordinator, track, worker. Author the track decomposition per project (build, landing, and verification are common cuts, not a required shape). Hard-coded swarm trees were tried and parked as too rigid.
+深度停在协调者、轨道、worker 三层。轨道分解按项目撰写（构建、落地、验证是常见切法，不是规定形状）。硬编码的 swarm 树试过，因太僵硬而搁置。
 
-#### Store layout
+#### Store 布局
 
-Create `~/.claude/orchestrate/<project-slug>/`, outside the repo and outside the session. The store has to outlive this chat: the program runs for days, a session restart is expected (see Liveness and failure), and the store is the postmortem. The session scratchpad is not a candidate, however convenient. It is session-scoped and temporary, so a restart takes the program's only state with it. Every file has exactly one writer. Owners publish facts, readers aggregate at read time. Use `bun skills/poteto-mode/scripts/orch/orch.ts` under the installed plugin for bookkeeping, written below as `orch`, while its canonical plain TSV and JSON stay readable without the CLI.
+创建 `~/.claude/orchestrate/<project-slug>/`，在仓库之外、会话之外。store 必须活得比本会话久：程序要跑几天，会话重启是预期内的（见"存活与失败"），而 store 就是复盘材料。会话草稿区再方便也不是候选。它是会话作用域且临时的，重启会把程序的唯一状态一并带走。每个文件有且只有一个写者。owner 发布事实，读取方在读时聚合。簿记使用已安装插件下的 `bun skills/poteto-mode/scripts/orch/orch.ts`（下文写作 `orch`），同时它的规范纯 TSV 与 JSON 在没有 CLI 时也保持可读。
 
-- `preferences.md` is the standing-orders register: numbered lines, one constraint each (model policy, stack shape and count, verification bar, forbidden paths, escalation policy). For human rulings, retain original wording and attribution per [Claims about human decisions](../../why/references/epistemics.md#claims-about-human-decisions). Label agent interpretations and missing originals. Copies are not new decisions. Paste it verbatim into every spawn and every resume. Directives decay across resumes, and each dropped one costs a human turn. When you catch yourself restating an instruction, append the line before you act (principle-encode-lessons-in-structure).
-- `overview.md` is the durable PR and issue DB. Append. Never rewrite wholesale per event.
-- `units.tsv` has one row per unit: id, track, state, branch, PR, head SHA, brief path. Update rows in place.
-- `frontier.json` is the computed merge frontier, per Stack safety.
-- `ledger.tsv` is the verification ledger, per Verification.
-- `inbox/` holds completion pointers. `gates.md` parks human gates (question, options, default on no answer).
-- `decisions.tsv` is the trail via the show-me-your-work skill.
-- `status.md` is derived from `units.tsv` and `ledger.tsv` at each drain, never hand-maintained. Regenerate it from the tables instead of narrating events into it.
+- `preferences.md` 是常设指令登记表：编号行，每行一条约束（模型策略、栈形状和数量、验证门槛、禁区路径、上报策略）。人类裁定按[关于人类决定的断言](../../why/references/epistemics.md#claims-about-human-decisions)保留原始措辞与出处。agent 的解读和原文缺失要标注出来。复制不构成新决定。每次派生和每次 resume 都原样粘贴。指令会在多次 resume 之间衰减，每丢一条都要付一个人工回合。发现自己在复述某条指令时，先追加登记再行动（principle-encode-lessons-in-structure）。
+- `overview.md` 是持久的 PR 和 issue 数据库。只追加。绝不因单个事件整体重写。
+- `units.tsv` 每单元一行：id、轨道、状态、分支、PR、head SHA、brief 路径。就地更新行。
+- `frontier.json` 是计算出的合并前沿，见"栈安全"。
+- `ledger.tsv` 是验证台账，见"验证"。
+- `inbox/` 存放完成指针。`gates.md` 搁置人工门禁（问题、选项、无回答时的默认值）。
+- `decisions.tsv` 是经 show-me-your-work skill 的轨迹。
+- `status.md` 在每次清理时从 `units.tsv` 和 `ledger.tsv` 派生，绝不手工维护。要从表里重新生成它，而不是把事件叙述进去。
 
-#### The brief
+#### brief
 
-Your prompts to agents are your only product, and a sloppy brief compounds into slop across the whole tree. Every spawn carries all of it. A field you cannot fill is a unit you have not scoped yet.
+你发给 agent 的 prompt 是你唯一的产品，一份马虎的 brief 会在整棵树上复利成 slop。每次派生都携带全部字段。填不出的字段就是一个尚未划清范围的单元。
 
 ```
 GOAL         one sentence, the outcome, executable by a stranger with no chat access
@@ -51,63 +51,63 @@ REPORT       status, branch, head SHA, PRs, verdict, what you actually ran, devi
 STANDING     <preferences.md pasted verbatim>
 ```
 
-Size the brief to the unit. A one-command unit gets the template collapsed to a paragraph that still names goal, scope, the verify command, and the report shape. A 4KB scaffold around a two-line edit costs more to write and obey than the edit. A spawn may reference the standing-orders file by store path. Verbatim paste is for every resume and for any brief that has to stand alone.
+brief 按单元伸缩。一条命令就能完成的单元，把模板收成一段话，但仍要点名目标、范围、verify 命令和报告形状。给两行的修改裹 4KB 脚手架，写它和遵守它的成本都高过修改本身。派生时可以按 store 路径引用常设指令文件。原样粘贴保留给每次 resume，以及任何必须独立成立的 brief。
 
-A sub-coordinator brief adds its track boundary and unit list, its spawn budget, the drain protocol, and the rollup format (per child: name, status, PR, head SHA, verdict, one line, plus track status and frontier delta).
+子协调者的 brief 另加：它的轨道边界与单元清单、派生预算、清理协议和汇总格式（每个孩子：名字、状态、PR、head SHA、判定、一句话，外加轨道状态与前沿变化）。
 
-A dependency is a context relay, not just ordering. Undeclared upstream context makes the worker guess. Missing fields are a refuse-to-spawn condition. Audit one sampled worker brief per sub-coordinator per wave, concurrently with the wave it samples, never as a gate in front of it. A failing brief stops that track and fixes the sub-coordinator's instructions, not just the worker, because brief quality decays late in a run. Never resume-chain a brief. Respawn fresh with consolidated scope.
+依赖是上下文中继，不只是排序。未声明的上游上下文让 worker 靠猜。字段缺失是拒绝派生的条件。每个波次对每个子协调者抽查一份 worker brief，与它抽样的波次并行进行，绝不作为挡在前面的关卡。brief 不合格就停掉那条轨道，并修正子协调者的指令，而不只是 worker，因为 brief 质量会在运行后期衰减。绝不把 brief 链式 resume。以整合后的范围重新派生。
 
-#### Steps
+#### 步骤
 
-1. **Frame.** State the done predicate as something countable ("all 126 units merged, each ledger-verified `unit-test-verified` or better"). Quantify scope: units, rough effort, expected stacks, and the wall-clock budget. If one agent could finish inside that budget, stop here and run Autonomous run instead. Collapsing must not depend on another document being present. It means do the work directly in this session, plain workers where they help, verification inline, landing as you go, and none of the store, register, or pilot machinery below. Schedule landing against the budget. By roughly 70% of it, stop spawning and land what is verified. Name the tracks per project. A contested decomposition or one-way door goes through the arena skill before the pilot. Present the framing once. Reversible prep proceeds without waiting.
-2. **Install the runtime.** Run `orch init`. Open the trail via the show-me-your-work skill, write the standing orders before any spawn, and seed `frontier.json` from existing PRs with `orch frontier set --repo <repo-dir>`.
-3. **Pilot.** Push one unit through the whole path: brief, worker, verification, stack entry, ledger row, merge. The pilot exists to falsify the brief template, the verify recipe, and the unit size while that costs one agent instead of fifty. Fix the contract from pilot evidence before any fan-out. Scale the pilot to the unit. On programs of near-identical cheap units, the first unit is the pilot, run as a normal unit with its verify command inline, and fan-out starts the moment it lands. The dedicated pilot pipeline (separate verifier agent, audit gate) is for expensive or novel unit shapes, not for clone-units where a serialized pilot has nothing to falsify.
-4. **Scale.** Spawn a rolling window of workers up to the in-flight cap, refilling as children finish. Blocking batches pay the slowest child of every batch. Spawn track sub-coordinators only past the one-drain threshold in Roles. Recompute ready work after each drain. Relay upstream reports into downstream briefs. Keep sibling communication upward only. The sampled brief audit runs alongside the wave it samples and stops the next refill on failure, not the current one.
-5. **Drain.** Run the queue discipline below at every drain point.
-6. **Land.** Landing is continuous, never a terminal phase. Integration starts with the first verified unit and runs alongside the remaining waves. On heavy repos the stacker is a standing role from wave one, integrating as units verify. On repos where local git is cheap, the coordinator lands verified units itself per Roles. Keep the frontier green before upper-stack work. Stack safety governs. Advance `frontier.json` only on merge or reported new head SHAs.
-7. **Close.** Drain the final inbox, reconcile every spawned agent to a terminal row (done, abandoned, zombie-reconciled), confirm the predicate on the real artifact, confirm every landed PR has a verdict for its current head SHA, audit the trail per show-me-your-work including its cross-model review, encode recurring corrections into `preferences.md` or the brief template. Leave the store intact. It is the postmortem.
+1. **定框。** 把完成谓词表述成可数的东西（"126 个单元全部合并，且每个都经台账验证为 `unit-test-verified` 或更高"）。量化范围：单元数、粗略工作量、预期栈数、墙钟预算。单个 agent 在该预算内就能做完的话，到此为止，改跑 Autonomous run。收缩绝不能依赖另一份文档在场：它意味着直接在本会话里干活，有益处的地方用普通 worker，验证内联，边做边落地，下面那套 store、登记表和试点机器一概不用。对照预算安排落地：大约用到 70% 时停止派生，把已验证的落地。按项目点名轨道。有争议的分解或单向门决策，试点之前先过 arena skill。定框只陈述一次。可逆的准备不等批准就推进。
+2. **安装运行时。** 运行 `orch init`。经 show-me-your-work skill 开轨迹，任何派生之前先写常设指令，并用 `orch frontier set --repo <repo-dir>` 从现有 PR 播种 `frontier.json`。
+3. **试点。** 把一个单元推过整条路径：brief、worker、验证、入栈、台账行、合并。试点存在的意义，是在代价只有一个 agent 而不是五十个时就证伪 brief 模板、verify 配方和单元粒度。任何扇出之前，先按试点证据修正契约。试点按单元伸缩：单元近乎相同且廉价的程序，第一个单元就是试点——作为普通单元运行、verify 命令内联，它一落地扇出就开始。专职试点流水线（独立 verifier agent、审计关卡）留给昂贵或新颖的单元形状，不留给克隆式单元——对后者，串行的试点没有东西可证伪。
+4. **规模化。** 派生滚动窗口的 worker 直至在途上限，孩子完成即补位。阻塞批次要付每批最慢孩子的代价。只有超过"角色与布置"里的一次清理阈值才派生轨道子协调者。每次清理后重算就绪的工作。把上游报告中继进下游 brief。兄弟间的沟通只向上。抽查的 brief 审计与它抽样的波次并行跑，失败时叫停的是下一次补位，不是当前波次。
+5. **清空。** 每个清理点都执行下面的队列纪律。
+6. **落地。** 落地是连续的，绝不是最后一个阶段。集成从第一个已验证单元开始，与剩余波次并行。重仓库上，stacker 从第一波起就是常设角色，单元一验证就集成。本地 git 廉价的仓库上，协调者按"角色与布置"自己落地已验证单元。上层栈的工作之前保持前沿全绿。以"栈安全"为准。`frontier.json` 只在合并或收到新上报的 head SHA 时推进。
+7. **收尾。** 清空最后的收件箱，把每个派生过的 agent 对账到一行终态（done、abandoned、zombie-reconciled），在真实产物上确认谓词，确认每个落地的 PR 对其当前 head SHA 都有判定，按 show-me-your-work 审计轨迹（含跨模型审查），把反复出现的修正沉淀进 `preferences.md` 或 brief 模板。store 原样保留。它就是复盘。
 
-#### Queue and drain
+#### 队列与清空
 
-- On a completion notification, run `orch inbox push <agent> <unit> <status> [--report PATH]` and return to what you were doing. Never deep-review inline. A completion that needs review becomes a verifier unit. Never review a diff inside a drain.
-- Drain in batches at four points: the end of a critical section, a track rollup, a frontier watcher wake (arm it via the loop skill, with a long heartbeat fallback), and before a human report. Begin each batch with `orch inbox drain`. Arrivals during a drain wait for the next one.
-- Critical sections you finish first: authoring a brief, a stack operation, a conflict decision, writing a gate, updating ledger or frontier.
-- Each drain classifies every pointer (landed, needs-verify, failed, zombie, noise), writes the resulting rows through `orch unit add`, `orch unit set`, and `orch ledger record`, runs `orch status`, then spawns the next wave in one message.
-- Account for every spawned child at its track's rollup: arrived, respawned, or its scope explicitly absorbed. Silently redoing a missing child's work hides both the wasted spend and the coverage gap its result existed to close.
-- A drain turn ends with the three lines from `orch status`: counts against the states, what changed, gates open. Detail lives in `status.md`. The full reply contract applies at checkpoints and close.
+- 收到完成通知，运行 `orch inbox push <agent> <unit> <status> [--report PATH]`，然后回到手头的事。绝不在原地深审。需要审查的完成事件变成一个 verifier 单元。绝不在清理内部审查 diff。
+- 在四个时机分批清空：临界区结束、轨道汇总、前沿 watcher 唤醒（经 loop skill 布防，配长心跳兜底）、给人类报告之前。每批以 `orch inbox drain` 开头。清空期间新到的事件等下一批。
+- 先做完的临界区：撰写 brief、栈操作、冲突决断、写门禁、更新台账或前沿。
+- 每次清空给每个指针分类（landed、needs-verify、failed、zombie、noise），把结果行经 `orch unit add`、`orch unit set`、`orch ledger record` 写入，跑 `orch status`，然后在一条消息里派生下一波。
+- 每条轨道的汇总要交代每个派生过的孩子：到了、重新派生过、或其范围被明确吸收。悄悄重做一个失踪孩子的工作，会同时掩盖浪费的开销和它的结果本要补上的覆盖缺口。
+- 清空回合以 `orch status` 的三行收尾：对各状态的计数、变了什么、开着哪些门。细节在 `status.md`。完整的回复契约适用于检查点和收尾。
 
-#### Stack safety
+#### 栈安全
 
-- The frontier is a computed object, never narrative. Recompute `frontier.json` from `gt` after every merge and stack mutation because GitHub base refs drift mid-restack while gt tracking is authoritative: ordered PR list, branch names, head SHAs, a generation number, the lowest unmerged PR. Resolve it where gt knows the stack, normally the stacker's clone. A checkout whose gt metadata never saw the submits reports no PRs and the command errors rather than guessing.
-- Exactly one stacker per stack may run `gt`, serialized within its stack. Record the holder in the standing orders. A restack at this scale is slow and blocks whoever runs it, so give it its own unit and keep the coordinator out of it.
-- Workers never rebase and never run `gt`. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation. They report conflicts to the stacker rather than restacking.
-- PR closes and retargets go through the stacker only. Closing a base PR orphans every chain above it. Merges and stack surgery are units with briefs like any other.
-- One retro watcher follows merged PRs for reverts, post-merge CI breaks, and orphaned follow-ups.
+- 前沿是计算出来的对象，绝不是叙述。每次合并和每次栈变更之后都从 `gt` 重算 `frontier.json`，因为 restack 途中 GitHub 的 base ref 会漂移，而 gt 的跟踪才是权威：有序 PR 清单、分支名、head SHA、一个代数编号、最低的未合并 PR。在 gt 认识这条栈的地方解析它，通常是 stacker 的克隆。gt 元数据从未见过这些提交的检出会报告没有 PR 并且命令报错，而不是瞎猜。
+- 每条栈恰好一个 stacker 可以跑 `gt`，在栈内串行。把持有者记进常设指令。这个规模的 restack 很慢，还会阻塞跑它的人，所以给它单独立一个单元，别让协调者掺和。
+- Worker 绝不 rebase、绝不跑 `gt`。Babysitter 遵循 `playbooks/babysit.md`，每条栈一个，范围限于一个不可变的前沿代。它们把冲突报给 stacker，而不是自行 restack。
+- PR 的关闭和改目标只走 stacker。关闭一个 base PR 会让其上每条链都变成孤儿。合并和栈手术也是带 brief 的单元，与其他无异。
+- 一个 retro watcher 盯着已合并的 PR，留意回退、合并后 CI 崩坏和被落下的后续项。
 
-#### Verification
+#### 验证
 
-Scale verification to the unit. When VERIFY is a single cheap command, the worker runs it and reports the output, and the coordinator spot-checks receipts. A dedicated verifier agent (on a different model family than the worker) is for units whose verification is expensive, judgment-laden, or high-blast-radius. A verifier agent whose entire product would be rerunning one command is ceremony, not verification.
+验证按单元伸缩。VERIFY 只是一条廉价命令时，worker 自己跑并报告输出，协调者抽查凭证。专职 verifier agent（用与 worker 不同的模型家族）留给验证昂贵、吃判断或高影响面的单元。一个 verifier agent 的全部产品如果只是重跑一条命令，那是仪式，不是验证。
 
-Write ledger rows with `orch ledger record`. Check the current PR and head SHA with `orch ledger check`. `ledger.tsv`, one row per verdict, keyed by PR number plus head SHA: `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed`. CI green is an input to a verdict, not a verdict. Behavioral work needs better than `type-check-only`. `verifier-blocked` is not a pass. Respawn when the environment heals. `verifier-failed` gets a fix unit, not a re-verify. A worker may self-report. A verifier overrides it on the same key. A new head SHA voids the row, so re-verify after restack. The ledger answers "was this verified", not memory and not the transcript.
+用 `orch ledger record` 写台账行。用 `orch ledger check` 查当前 PR 和 head SHA。`ledger.tsv` 每个判定一行，以 PR 号加 head SHA 为键：`live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed`。CI 全绿是判定的输入，不是判定。行为层面的工作需要好于 `type-check-only`。`verifier-blocked` 不是通过，环境恢复后重新派生。`verifier-failed` 配一个修复单元，不是重新验证。worker 可以自报。verifier 在同一个键上覆盖它。新 head SHA 使该行作废，所以 restack 之后要重新验证。回答"这个验证过没有"的是台账，不是记忆，也不是 transcript。
 
-A unit is not done until its output is externalized the moment it lands, never batched to the end of the run. A worker pushes its branch, a verifier writes its ledger row, receipts land in the store. Work that exists only on one VM when that VM dies was never done.
+单元的产出在落地那一刻就要外化，绝不攒到运行末尾，否则单元就不算完成。worker 推它的分支，verifier 写它的台账行，凭证落进 store。只存在于某台 VM 上的工作，VM 一死就等于从没做过。
 
-#### Liveness and failure
+#### 存活与失败
 
-- Never resume an agent to check on it. A resume restarts an idle agent. Probe read-only: the ledger, `units.tsv`, `gh`, pushed branches, and the background task list. Transcript mtime is not liveness.
-- A silent death gets a synthetic postmortem row in the inbox (unit, failure mode, last evidence, options). Replan on evidence as it arrives. Never wait for full quiescence.
-- Retry by mode: cap-hit or oom, respawn with smaller scope. Network-drop, retry as-is. Tool-error, retry on a different model. Unknown, retry once. Two retries, then abandon the unit and replan around it.
-- A zombie that returns hours late reconciles against the current frontier and ledger before anything is accepted. Salvage unique findings through a fresh unit, never a blind merge.
-- When continued spawning would produce garbage tree-wide (bad upstream output, broken acceptance, dead infra), write a stop line at the top of the standing orders, let in-flight work finish, fix the cause, clear it.
-- Bound your own infra retries the same way you bound a child's. After a few consecutive tool aborts, stop retrying. Write a terminal handoff to durable state (what is done, where it lives, the exact command to resume) and end the run.
-- After a session restart, in-flight subagents are dead. Pushed branches, open PRs, and the store are not. Re-read the standing orders and `units.tsv`, recompute the frontier, reattach in-flight work by PR and branch rather than agent id, respawn one sub-coordinator per track from its stored brief plus current state, drain, resume. The dead session's store lock clears itself on the next write. `orch` replaces a lock whose holder pid is gone.
+- 绝不为查看状态而 resume 一个 agent——resume 会重启一个闲置的 agent。只读探测：台账、`units.tsv`、`gh`、已推送的分支、后台任务列表。transcript 的 mtime 不是存活。
+- 无声的死亡会在收件箱里得到一条合成的复盘行（单元、失败模式、最后的证据、可选动作）。证据到了就按证据重规划。绝不等待完全静默。
+- 按模式重试：撞上限或 OOM，缩小范围重新派生。网络中断，原样重试。工具错误，换模型重试。未知，重试一次。两次重试之后，放弃该单元，围绕它重规划。
+- 迟到几小时的僵尸回来，先对照当前前沿和台账对账，然后才接受任何东西。独特的发现经一个新单元抢救，绝不盲目合并。
+- 当继续派生会在全树范围产出垃圾时（上游输出坏掉、验收失效、基础设施死亡），在常设指令顶部写一行停止线，让在途工作跑完，修好原因，再清除。
+- 自己的基础设施重试也要像约束孩子一样封顶。连续几次工具中断后，停止重试。把终局交接写进持久状态（做完了什么、在哪、恢复用的确切命令），结束运行。
+- 会话重启后，在途 subagent 已死。已推送的分支、打开的 PR 和 store 没死。重读常设指令和 `units.tsv`，重算前沿，按 PR 和分支（而不是 agent id）重新挂接在途工作，每条轨道从其存档 brief 加当前状态重新派生一个子协调者，清空，继续。死亡会话的 store 锁在下一次写入时自清。`orch` 会替换持有者 pid 已经消失的锁。
 
-#### Escalation
+#### 上报
 
-Reaches the human, batched into the status page rather than per item: irreversible actions (force-push to shared branches, deploys, deletions, closing someone else's PR), genuine product or preference calls no experiment settles, a standing order that contradicts observed reality, a program-level dead end that survived a replan. Park each as a `gates.md` entry before asking, and route work around it.
+要到达人类的，按状态页分批而不是逐条：不可逆操作（对共享分支 force-push、部署、删除、关闭别人的 PR）、任何实验都定不下来的真正产品或偏好抉择、与观察到的事实相矛盾的常设指令、扛过一次重规划仍然存在的程序级死路。开口之前先把每条作为 `gates.md` 条目搁置，并绕开它安排工作。
 
-Never reaches the human: frontier nudges, restack mechanics, retries, CI flake triage, review-thread triage, format fixes, scope the brief already forbids (refuse and continue), and "should I keep going". When in doubt, act and log.
+绝不到达人类的：前沿微调、restack 机务、重试、CI 抖动分诊、审查线程分诊、格式修复、brief 已禁止的范围（拒绝并继续），以及"我还要继续吗"。拿不准时，行动并记录。
 
-Mid-run discoveries fix only what blocks the frontier. Everything else parks in follow-ups. At this fan-out a small scope leak multiplies into PRs nobody asked for.
+运行中发现的，只修挡住前沿的。其余停进后续事项。在这种扇出下，一点范围泄漏会放大成一堆没人要的 PR。
 
-**Reply:** at checkpoints and close: the predicate and the count against it from `units.tsv` and `ledger.tsv`, tracks and what each landed, the frontier (PR list plus SHAs), verdicts summary, what was abandoned and why, gates awaiting the human (the only asks), the store path, and the trail path. Numbers from the tables, not narrative. Include PR links.
+**回复：**检查点和收尾时：谓词以及 `units.tsv` 与 `ledger.tsv` 给出的对它的计数、各轨道及各自落了什么、前沿（PR 清单加 SHA）、判定摘要、放弃了什么及原因、等待人类的门禁（唯一的提问）、store 路径、轨迹路径。数字取自表，不是叙述。附上 PR 链接。

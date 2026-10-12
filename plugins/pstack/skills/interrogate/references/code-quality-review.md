@@ -1,47 +1,47 @@
-# Code Quality Review
+# 代码质量审查
 
-Each reviewer applies this code-quality lens in addition to the rubric. It is a strict standard focused on implementation quality, maintainability, abstraction quality, and codebase health.
+每个 reviewer 在 rubric（评分细则）之外还要应用这一代码质量视角。它是一套严格的标准，聚焦实现质量、可维护性、抽象质量与代码库健康度。
 
-Above all, be ambitious about code structure. Do not merely identify local cleanup. Actively search for "code judo" moves, restructurings that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
+最重要的是，对代码结构要有雄心。不要只指出局部清理。要主动寻找 "code judo"（代码柔道）手法——在保持行为不变的同时，让实现显著更简单、更精小、更直接、更优雅的重构。
 
-## Core Prompt
+## 核心指令
 
-Start from this baseline:
+以下面这段基准为起点：
 
-> Perform a deep code quality audit of the current branch's changes.
-> Rethink how to structure / implement the changes to meaningfully improve code quality without impacting behavior.
-> Work to improve abstractions, modularity, reduce Spaghetti code, improve succinctness and legibility.
-> Be ambitious, if there is a clear path to improving the implementation that involves restructuring some of the codebase, go for it.
-> Be extremely thorough and rigorous. Measure twice, cut once.
+> 对当前分支的变更做一次深度的代码质量审计。
+> 重新思考如何组织 / 实现这些变更，在不影响行为的前提下切实提升代码质量。
+> 努力改进抽象与模块化，减少 Spaghetti code（面条式代码），提升简洁性与可读性。
+> 要有雄心：如果有一条清晰的路径，能通过重构部分代码库来改进实现，就放手去做。
+> 要极其彻底、严谨。三思而后行。
 
-## Dimensions
+## 维度
 
-Each dimension is stated once. Apply the ones that are relevant.
+每个维度只陈述一次。应用其中相关的那些。
 
-0. **Be ambitious about structural simplification.** Do not stop at "this could be a bit cleaner." Look for reframings that make whole branches, helpers, modes, conditionals, or layers disappear. Assume a "code judo" move is often available. It uses the existing architecture more effectively and makes the change dramatically simpler. If you can delete complexity rather than rearrange it, push hard for that.
+0. **对结构简化要有雄心。** 不要止步于"这里可以更干净一点"。要寻找能让整段分支、helper、模式、条件判断或层次直接消失的重新构思。要假定往往存在 "code judo" 手法：它更有效地利用既有架构，让变更大幅变简单。如果你能删除复杂性而不是重新排列它，就大力推动。
 
-1. **Do not let a PR push a file from under 1k lines to over 1k lines without a very strong reason.** Treat this as a strong smell. Prefer extracting helpers, subcomponents, or modules. If the diff crosses that threshold, ask whether the code should be decomposed first. Waive only for a compelling structural reason where the resulting file stays clearly organized.
+1. **没有非常充分的理由，不要让 PR 把一个文件从 1k 行以下推到 1k 行以上。** 把这视为强烈坏味道。优先抽取 helper、子组件或模块。如果 diff 跨过了这个阈值，先问：这段代码是否应当先拆分。只有当存在令人信服的结构性理由、且产出的文件依然组织清晰时才可豁免。
 
-2. **Do not allow spaghetti growth in existing code.** Be suspicious of new ad-hoc conditionals, scattered special cases, or one-off branches inserted into unrelated flows. Treat "weird if statements in random places" as a design problem, not a style nit. Prefer pushing the logic into a dedicated helper, state machine, or module instead of tangling an existing path.
+2. **不允许既有代码出现 spaghetti 式增长。** 对新加的临时性条件判断、散落的特例处理、或插进无关流程的一次性分支保持警惕。把"到处冒出来的怪异 if 语句"当作设计问题，而不是风格上的 nit。优先把逻辑收进专用的 helper、状态机或模块，而不是缠乱既有路径。
 
-3. **Bias toward cleaning the design, not just accepting working code.** If behavior can stay the same while the structure becomes meaningfully cleaner, push for the cleaner version. Prefer simplifications that remove moving pieces over refactors that spread the same complexity around.
+3. **倾向于清理设计，而不是仅仅接受能跑的代码。** 如果行为保持不变、结构却能明显变干净，就推动采用更干净的版本。优先选择能移除活动部件的简化，而不是把同样的复杂性摊到别处的重构。
 
-4. **Prefer direct, boring, maintainable code over hacky or magical code.** Treat brittle, ad-hoc, or "magic" behavior as a problem. Be skeptical of generic mechanisms that hide simple data-shape assumptions. Flag thin abstractions, identity wrappers, or pass-through helpers that add indirection without buying clarity.
+4. **优先选择直接、朴素、可维护的代码，而不是取巧或魔法的代码。** 把脆弱、临时拼凑或"魔法"式的行为当作问题。对把简单数据形态假设隐藏起来的通用机制保持怀疑。标记薄弱的抽象、恒等包装（identity wrapper）、以及只增加间接层却换不来清晰性的透传 helper。
 
-5. **Push on type and boundary cleanliness when it affects maintainability.** Question unnecessary optionality, `unknown`, `any`, or cast-heavy code when a clearer type boundary could exist. Prefer explicit typed models over loosely-shaped ad-hoc objects. If a branch leans on a silent fallback to paper over an unclear invariant, ask whether the boundary should be made explicit.
+5. **当类型与边界的整洁影响可维护性时，要着力推动。** 在本可以存在更清晰类型边界的地方，质疑不必要的可选性、`unknown`、`any` 或重度依赖 cast 的代码。优先使用显式类型的模型，而不是松散形状的临时对象。如果某个分支靠静默回退来掩盖不清晰的不变量，追问这个边界是否应当显式化。
 
-6. **Keep logic in the canonical layer and reuse existing helpers.** Call out feature logic leaking into shared paths or implementation details leaking through APIs. Prefer existing canonical utilities over bespoke one-offs. Push code toward the right package, service, or module instead of normalizing drift.
+6. **把逻辑放在规范层（canonical layer），并复用既有 helper。** 点出功能逻辑泄漏进共享路径、或实现细节从 API 渗出的情况。优先使用既有的规范工具函数，而不是定制的一次性实现。把代码推向正确的 package、service 或 module，而不是接受并固化漂移。
 
-7. **Treat unnecessary sequential orchestration and non-atomic updates as design smells when the cleaner structure is obvious.** If independent work is serialized for no reason, ask whether it should run in parallel. If related updates can leave state half-applied, push for a more atomic structure. Do not over-index on micro-optimizations, but do flag avoidable orchestration complexity that makes the code more brittle.
+7. **在更干净的结构显而易见时，把不必要的串行编排和非原子更新当作设计坏味道。** 如果相互独立的工作毫无理由地被串行化，追问它是否应当并行运行。如果相关更新可能让状态处于半应用状态，推动更原子的结构。不要过分纠结微优化，但要标记那些让代码更脆弱、且本可避免的编排复杂性。
 
-## Output Expectations
+## 输出预期
 
-Prioritize structural code-quality regressions and missed simplifications first, then spaghetti and branching complexity, then boundary, type, and file-size concerns, then smaller modularity and legibility issues.
+优先报告结构性的代码质量退化和被错过的简化机会；其次是 spaghetti 与分支复杂度；再次是边界、类型与文件大小方面的问题；最后是较小的模块化与可读性问题。
 
-## Approval Bar
+## 批准标准
 
-Do not approve merely because behavior seems correct. Treat these as presumptive blockers unless the author can justify them: the PR keeps a lot of incidental complexity when a code-judo move would delete it. Pushes a file from below 1000 lines to above 1000 lines. Adds ad-hoc branching that tangles an existing flow. Scatters feature checks across shared code. Adds an unnecessary abstraction, wrapper, or cast-heavy contract, or duplicates an existing helper or puts logic in the wrong layer when there is a clear canonical home. If those conditions are not met, leave explicit, actionable feedback and push for a cleaner decomposition.
+不要仅仅因为行为看起来正确就批准。以下情况应默认视为阻塞项，除非作者能给出正当理由：PR 在一次 code-judo 手法就能删掉这些复杂性的情况下保留了大量附随复杂性；把一个文件从 1000 行以下推到 1000 行以上；加入缠乱既有流程的临时分支；把功能检查散落在共享代码中；增加不必要的抽象、包装或重度 cast 的契约，或在存在明确规范归属时复制既有 helper、或把逻辑放错层。如果这些情况未能被正当化，就留下明确、可执行的反馈，并推动更干净的拆分。
 
-## Review Tone
+## 审查语气
 
-Be direct, serious, and demanding about quality. Do not be rude, but do not soften major maintainability issues into mild suggestions. If the code is making the codebase messier, say so. If the implementation missed an obvious dramatic simplification, say that too. Do not be satisfied with "maybe rename this" when the real issue is structural.
+对质量要直接、严肃、高标准。不要粗鲁，但也不要把重大的可维护性问题软化成温和的建议。如果代码正在让代码库变乱，直说。如果实现错过了一个显而易见的大幅简化机会，也要直说。当真正的问题是结构问题时，不要满足于"要不把这个改个名"。

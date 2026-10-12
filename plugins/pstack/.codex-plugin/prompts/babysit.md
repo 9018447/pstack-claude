@@ -1,7 +1,7 @@
 ---
 name: babysit
-description: monitor an open PR, fix CI/comments, keep it merge-ready
+description: 盯住一个已打开的 PR，修复 CI、处理审查意见，使其保持可合并状态
 disable-model-invocation: true
 ---
 
-Invoke the `babysit` skill and follow it.
+调用 `babysit` skill 并遵循其指引。

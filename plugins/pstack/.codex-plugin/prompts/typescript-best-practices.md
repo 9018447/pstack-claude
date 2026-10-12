@@ -1,7 +1,7 @@
 ---
 name: typescript-best-practices
-description: ground type-system discipline in TypeScript syntax
+description: 把类型系统纪律建立在 TypeScript 语法之上
 disable-model-invocation: true
 ---
 
-Invoke the `typescript-best-practices` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `typescript-best-practices` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

@@ -1,13 +1,13 @@
-### Autonomous run
+### 自主运行（Autonomous run）
 
-**You own the exit condition. Define done, then drive to it without stopping.**
+**退出条件由你负责。定义"完成"，然后一路驱动到它，中途不停。**
 
-1. State the exit condition as a checkable predicate before the first iteration (tests green, repro fixed, all N PRs merged, pixel-diff zero).
-2. Pick the wake mechanism using Claude Code's `loop` skill (a built-in, not a pstack skill). An event to watch (CI, a merge, a ref advancing) gets a watcher subagent that wakes you on the event, with a long time-based heartbeat as fallback. No event gets a fixed-interval heartbeat sized to when the result is worth re-checking.
-3. Each iteration makes the smallest change the evidence justifies, verifies it against the predicate, commits if it advanced, discards changes that didn't help. Belt-and-suspenders that "might help" gets reverted, not left to ride.
-   Sequence the work via the **sequence-verifiable-units** principle skill, verifying each unit before the next instead of batching checks at the end.
-4. Mid-run discoveries are yours. Address broken skills, related bugs, flaky verifiers, review noise, tooling failures, orphaned follow-ups, and fixable drift yourself via poteto-mode. Put out-of-band fixes in their own PR. Do not park reversible work for the human or use `AskUserQuestion`. Surface only irreversible actions, genuine product or preference calls no experiment can settle, or a real dead end. Keep the predicate as the main drive, and return to it after each side fix.
-5. Checkpoint every iteration via the **show-me-your-work** skill, a row for what changed and whether the predicate moved.
-6. Stop when the predicate is met. A plateau is not a stop, so keep going and pivot your approach to push past it. Surface a genuine dead end rather than spinning, and never relax the predicate to declare victory.
+1. 在第一次迭代之前，把退出条件表述为一个可检验的谓词（测试全绿、复现已修复、N 个 PR 全部合并、像素 diff 为零）。
+2. 用 Claude Code 的 `loop` skill（内置 skill，不是 pstack skill）挑选唤醒机制。有事件可盯（CI、一次合并、某个 ref 前进）就配一个 watcher subagent，事件发生时唤醒你，并以较长的时间心跳兜底。没有事件就配固定间隔的心跳，间隔按"结果多久值得再查一次"来定。
+3. 每次迭代只做证据能支撑的最小改动，对照谓词验证，有推进就提交，没帮助的改动直接丢弃。"也许有用"的双保险一律回滚，不留着碰运气。
+   用 **sequence-verifiable-units** 原则 skill 排布工作顺序，逐个单元先验证再进行下一个，而不是把检查攒到最后一起做。
+4. 中途的发现也归你处理。坏掉的 skill、相关缺陷、时好时坏的 verifier、审查噪音、工具故障、被落下的后续项、可修复的漂移，都由你通过 poteto-mode 自己解决。计划外修复放进单独的 PR。不要把可逆的工作留给人类，也不要动用 `AskUserQuestion`。只有不可逆操作、任何实验都定不下来的真正产品或偏好抉择、真正的死路，才上报。谓词始终是主线，每次支线修复后回到它。
+5. 每次迭代都通过 **show-me-your-work** skill 打检查点：记一行——改了什么，谓词是否推进。
+6. 谓词满足即停。平台期不是停点，继续推进并换打法冲过去。遇到真正的死路就如实上报而不是空转，绝不为了宣布胜利而放宽谓词。
 
-**Reply:** the exit condition, iterations run, what landed, what was discarded, final predicate state.
+**回复：**退出条件、运行的迭代次数、落地了什么、丢弃了什么、谓词的最终状态。

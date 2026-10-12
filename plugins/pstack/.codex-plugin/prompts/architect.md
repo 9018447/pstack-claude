@@ -1,7 +1,7 @@
 ---
 name: architect
-description: settle types and module shape before writing code that crosses a function boundary
+description: 在编写跨越函数边界的代码之前，先敲定类型与模块结构
 disable-model-invocation: true
 ---
 
-Invoke the `architect` skill and follow it.
+调用 `architect` skill 并遵循其指引。

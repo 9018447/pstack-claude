@@ -1,53 +1,53 @@
-# Pi tool mapping for pstack
+# pstack 的 Pi 工具映射
 
-pstack skills are written in Claude Code tool language (the `Skill` tool, the `Agent` tool, `AskUserQuestion`, Claude model names). On Pi the skills are the same files, loaded from the pstack package, and the package's Pi extension registers tools named after the Claude ones, so most names map one to one. Read this when a pstack skill names a Claude tool, a driver or bundled skill, or a Claude model. This file is Pi-specific.
+pstack skill 用 Claude Code 工具语言编写（`Skill` 工具、`Agent` 工具、`AskUserQuestion`、Claude 模型名）。在 Pi 上是同一批文件，从 pstack 包加载，且该包的 Pi 扩展注册了与 Claude 同名的工具，所以大多数名称一一对应。当 pstack skill 提到某个 Claude 工具、driver 或内置 skill、或某个 Claude 模型时，阅读本文。本文仅针对 Pi。
 
-## Tool actions
+## 工具操作
 
-| pstack / Claude action | Pi equivalent |
-|------------------------|---------------|
-| Read a file | `read` |
-| Create a file | `write` |
-| Edit a file | `edit` (exact text replacement) |
-| Delete a file | `bash` (`rm`) |
-| Run a shell command | `bash` |
-| Search file contents / find files | `grep`, `find`, and `ls` when enabled, otherwise `bash` (`rg`, `grep`, `find`, `ls`). Pi enables only `read`, `bash`, `edit`, and `write` by default. |
-| Fetch a URL | `bash` with `curl` / `wget` |
-| Search the web | Pi has no web search tool. Use an MCP server that provides one. |
-| Invoke a skill (the `Skill` tool, `/command`) | Skills load natively. The model reads a skill when its description matches; `/skill:<name>` forces one. |
-| Dispatch a subagent (the `Agent`/`Task` tool) | `agent` |
-| Dispatch N parallel subagents in one turn | N `agent` calls with `run_in_background: true` in one response |
-| Wait for a subagent result | A foreground `agent` call returns the final text. A background agent's completion arrives as a message naming its id, status, and final text, after your current tool calls or as a new turn when you are idle, so do not poll. |
-| Continue or steer a subagent (`SendMessage`) | `send_message`, addressed by agent id or description |
-| List subagents | `list_agents` |
-| Stop a subagent | `stop_agent` |
-| Track tasks (the todolist; `TaskCreate` / `TaskUpdate`, or `TodoWrite` on Claude Code) | Pi has no task-tracking tool. Keep the `todo.md` checklist poteto-mode describes for that case. |
-| Ask the human a fixed-choice question (`AskUserQuestion`) | `ask_user_question`, same shape. Without an interactive UI (print or JSON mode), and in a child agent, it returns an error, so ask in plain text. |
-| Schedule a self-paced re-invocation (`ScheduleWakeup`) | `schedule_wakeup`, same shape. A due wakeup stays pending until the session is idle, including during manual compaction. `noop: true` only labels the wakeup, which is still scheduled, and `stop: true` cancels the pending wakeup and needs no other field. In print and JSON mode, and in a child agent, scheduling returns an error, because Pi exits when the run ends and the wakeup could never fire. After a `/loop` command ends or replaces the loop during a run, that run is refused every wakeup until it settles, whatever the prompt, and Pi tells the user. No other wakeup is refused. |
-| Read this workspace's session transcripts (Claude Code's `~/.claude/projects/<encoded-cwd>/`) | Pi sessions live in `~/.pi/agent/sessions/--<cwd>--/` (under `$PI_CODING_AGENT_DIR` when set), where `<cwd>` is the working directory without its leading `/` and with each `/` as `-`. Subagent sessions the extension started live in `<agent dir>/pstack/<parent session id>/agents/`. Each file opens with a `session` header line; every later line is an entry with an `id` and a `parentId`, and a message entry is `type: "message"` with `message.role` `user`, `assistant`, or `toolResult`. A session keeps abandoned branches in the same file, so follow `parentId` back from the last entry for the conversation that happened. The same privacy rule applies: read only this workspace's directory, never a glob across `sessions/`. |
+| pstack / Claude 操作 | Pi 等价物 |
+|----------------------|-----------|
+| 读取文件 | `read` |
+| 创建文件 | `write` |
+| 编辑文件 | `edit`（精确文本替换） |
+| 删除文件 | `bash`（`rm`） |
+| 运行 shell 命令 | `bash` |
+| 搜索文件内容/查找文件 | 启用时用 `grep`、`find` 和 `ls`，否则用 `bash`（`rg`、`grep`、`find`、`ls`）。Pi 默认只启用 `read`、`bash`、`edit` 和 `write`。 |
+| 抓取 URL | `bash` 加 `curl` / `wget` |
+| 搜索网页 | Pi 没有网页搜索工具。用提供该能力的 MCP server。 |
+| 调用 skill（`Skill` 工具、`/command`） | skill 原生加载。描述匹配时模型会读入某个 skill；`/skill:<name>` 可强制加载。 |
+| 派发 subagent（`Agent`/`Task` 工具） | `agent` |
+| 一回合内并行派发 N 个 subagent | 一次回复里发出 N 个带 `run_in_background: true` 的 `agent` 调用 |
+| 等待 subagent 结果 | 前台 `agent` 调用直接返回最终文本。后台 agent 的完成以一条消息到达，指明其 id、状态和最终文本，时机在你当前工具调用之后、或你空闲时作为新回合，所以不要轮询。 |
+| 继续或操控 subagent（`SendMessage`） | `send_message`，按 agent id 或描述寻址 |
+| 列出 subagent | `list_agents` |
+| 停止 subagent | `stop_agent` |
+| 跟踪任务（todolist；`TaskCreate` / `TaskUpdate`，Claude Code 上是 `TodoWrite`） | Pi 没有任务跟踪工具。按 poteto-mode 为该情形描述的那样维护 `todo.md` 清单。 |
+| 向人类提出固定选项的问题（`AskUserQuestion`） | `ask_user_question`，形状相同。没有交互 UI（print 或 JSON 模式）时、以及在子 agent 中，它会返回错误，所以改用纯文本提问。 |
+| 自定节奏的再次调用（`ScheduleWakeup`） | `schedule_wakeup`，形状相同。到期的 wakeup 保持 pending，直到会话空闲为止，手动 compaction 期间也不例外。`noop: true` 只是给 wakeup 打个标记，它仍会被调度；`stop: true` 取消待触发的 wakeup，无需其他字段。在 print 与 JSON 模式下、以及在子 agent 中，调度会返回错误，因为 Pi 在 run 结束时就会退出，wakeup 永远无法触发。`/loop` 命令结束、或在一次 run 进行中替换了循环之后，该 run 在收尾前会被拒绝一切 wakeup，无论 prompt 写什么，且 Pi 会告知用户。其他 wakeup 一律不拒绝。 |
+| 读取本工作区的会话转录（Claude Code 的 `~/.claude/projects/<encoded-cwd>/`） | Pi 的会话存放在 `~/.pi/agent/sessions/--<cwd>--/`（设置了 `$PI_CODING_AGENT_DIR` 时在其下），其中 `<cwd>` 是去掉开头 `/`、每个 `/` 换成 `-` 的工作目录。扩展启动的 subagent 会话存放在 `<agent dir>/pstack/<parent session id>/agents/`。每个文件以一行 `session` 头开始；其后的每一行都是一条带 `id` 和 `parentId` 的条目，消息条目是 `type: "message"`，`message.role` 为 `user`、`assistant` 或 `toolResult`。会话把被放弃的分支也保存在同一文件里，所以要从最后一条条目沿 `parentId` 往回跟，还原真实发生过的对话。同样的隐私规则适用：只读本工作区的目录，绝不要对 `sessions/` 做 glob。 |
 
-`agent`, `send_message`, `list_agents`, `stop_agent`, `ask_user_question`, and `schedule_wakeup` come from the pstack Pi extension, which `pi install` of the pstack package loads. A skills-only setup has none of them, and the fan-out skills (`interrogate`, `why`, `how`, `arena`, `reflect`) degrade to a single sequential pass. A required independent review does not degrade. It stays blocked, as poteto-mode's [Subagents](../SKILL.md#subagents) section says.
+`agent`、`send_message`、`list_agents`、`stop_agent`、`ask_user_question` 和 `schedule_wakeup` 来自 pstack Pi 扩展，用 `pi install` 安装 pstack 包即可加载。只装 skill 的环境里这些都没有，扇出类 skill（`interrogate`、`why`、`how`、`arena`、`reflect`）退化为单次顺序执行。要求的独立审查不退化，保持阻塞，如 poteto-mode 的 [Subagents](../SKILL.md#subagents) 一节所述。
 
-## Subagent policy
+## Subagent 策略
 
-poteto-mode's Subagents section applies on Pi through the `agent` tool:
+poteto-mode 的 Subagents 一节在 Pi 上通过 `agent` 工具生效：
 
-- `subagent_type` takes the same values. `pstack:poteto-agent`, `pstack:comment-sicko`, `pstack:poteto-agent-<level>`, and `pstack:effort-<level>` resolve to the plugin's agent files. `general-purpose`, or no `subagent_type`, runs a child with no agent file. Claude Code's built-in types such as `Explore` and `Plan` do not exist on Pi, so use `general-purpose` and put the constraint in the prompt. An unknown type errors and lists the valid ones.
-- `readonly: true`, which the `how` and `interrogate` panels set, runs the child without the `edit` and `write` tools. It keeps `bash`, so a reviewer can still run `git diff`; say in the prompt that it must not change files.
-- Each child is its own `pi --mode rpc` process in your working directory, and the extension sends it the prompt on its stdin. It loads the packages and settings saved on disk, so it sees the pstack skills when pstack was installed with `pi install`. It does not inherit the parent's command-line flags, such as `-e`, `--api-key`, or a one-off `-a` project trust, so a pstack loaded only through `-e` gives children no extension.
-- A child can start its own agents, down to three layers below the main session, as on Claude Code. A child at the third layer runs without the `agent` tool.
-- `isolation: "worktree"` runs the child in its own git worktree under `.claude/worktrees/`. A worktree the agent left nothing in is removed when the agent finishes; a change, a gitignored file it wrote, or a commit on its branch or on any commit its HEAD visited keeps it.
-- `run_in_background: true` returns the agent id at once. The completion joins the conversation after your current tool calls finish, as on Claude Code, or starts a turn when you are idle. In print and JSON mode (`pi -p`), where Pi exits once the run settles, the extension holds the settle while a background agent runs, so each completion still arrives as a turn and the process ends after the last one. A child agent holds its settle the same way while its own background agents run, because its parent closes its stdin once it settles, and a message from the parent ends the hold. Interactive and RPC main sessions settle as usual and take the completion when it arrives.
-- While a background agent runs, the extension blocks a `bash` command line in which the word `sleep` is followed by a literal duration of two seconds or more, anywhere in the line, poll loops included: `sleep 30`, `npm test; sleep 30`, `until gh pr checks 1; do sleep 30; done`, `sleep infinity`. A shorter sleep, a sleep backgrounded as `sleep 30 &`, and `sleep` inside a quoted string, a comment, or a heredoc all run. The rule errs toward blocking, so `timeout 5 sleep 30` and a sleep inside a backgrounded group are blocked too. The completion notice arrives on its own, so continue other work or end your turn.
-- An agent's status follows its process. `completed` means the child exited, and `stop_agent` reports `stopped` only once the child has exited, so the Claude Code caveat about a `completed` agent that keeps running does not apply to the agent itself. Stopping an agent, like the session shutdown that stops every agent, ends the child pi and the `bash` command it still has running, because Pi kills that command's process tree on SIGTERM. A process that a finished `bash` command left in the background (`cmd &`, `nohup cmd`) runs in its own process group and outlives the agent; stop it yourself. A stopped agent's notice joins the conversation without starting a turn, since `stop_agent` already returned.
-- Agents belong to the session that started them. Quitting, reloading, and starting, resuming, or forking a session all stop every running agent, and a parent process that exits signals its agents to stop. On restore, an agent still running under its launching Pi process is left alone. An orphan whose process identity matches the saved record is signalled to stop, and remains unavailable to `send_message` and `stop_agent` until its process exits. Without enough identity data to signal it safely, its process is left alone and continuation is refused until its exit is confirmed. Only then is the restored agent marked `stopped` and allowed to resume.
-- `send_message` to a running agent is an RPC `steer` on the child's stdin. The agent reads it after its current tool calls, as on Claude Code, carries on in the same run, and sends one completion notice. A message the child rejects returns an error, and the agent keeps running. A message to a finished agent resumes its session in the background with the context of its earlier runs. A message that arrives after the agent settled but before its process exited resumes the agent once the process has exited.
-- A role value's `@<level>` picks the same effort agent as on Claude Code, and the extension passes its level to the child as `--thinking`. `session`, or an agent with no effort, runs the child at the parent's current thinking level.
-- Keep the rest of the policy unchanged. Pass file pointers not inlined context, give each worker its own worktree when they write, review every subagent's diff yourself.
+- `subagent_type` 取相同的值。`pstack:poteto-agent`、`pstack:comment-sicko`、`pstack:poteto-agent-<level>` 和 `pstack:effort-<level>` 解析到插件的 agent 文件。`general-purpose` 或不填 `subagent_type` 则运行一个没有 agent 文件的子进程。Claude Code 的内置类型如 `Explore`、`Plan` 在 Pi 上不存在，改用 `general-purpose` 并把约束写进 prompt。未知类型会报错并列出有效值。
+- `readonly: true`（`how` 与 `interrogate` 面板会设置它）让子进程不带 `edit` 和 `write` 工具运行。它保留 `bash`，所以审查者仍能运行 `git diff`；在 prompt 里说明它不得修改文件。
+- 每个子进程都是你工作目录下独立的 `pi --mode rpc` 进程，扩展通过 stdin 把 prompt 发给它。它加载保存在磁盘上的包和设置，所以只要 pstack 是用 `pi install` 装的，它就能看到 pstack skill。它不继承父进程的命令行旗标，比如 `-e`、`--api-key` 或一次性的 `-a` 项目信任，所以只通过 `-e` 加载的 pstack 不会给子进程带来扩展。
+- 子进程可以再启动自己的 agent，最深到主会话之下第三层，与 Claude Code 相同。第三层的子进程运行时没有 `agent` 工具。
+- `isolation: "worktree"` 让子进程在 `.claude/worktrees/` 下自己的 git 工作树中运行。agent 结束时，工作树里什么都没留下的会被删除；只要有一个改动、一个它写入的 gitignore 文件，或其分支上、或其 HEAD 曾指向的任何提交上有提交，就会保留。
+- `run_in_background: true` 立即返回 agent id。完成通知在你当前工具调用结束后加入对话（与 Claude Code 相同），或在你空闲时开启一个新回合。在 print 与 JSON 模式（`pi -p`）下，Pi 本会在 run 收尾后退出，但扩展会在后台 agent 运行期间扣住收尾，所以每个完成通知仍会作为一个回合到达，进程在最后一个之后结束。子 agent 在自己的后台 agent 运行时同样扣住收尾，因为其父进程在它收尾后就会关闭它的 stdin，而父进程发来一条消息会解除这个扣留。交互式与 RPC 主会话照常收尾，完成通知到了就接下。
+- 后台 agent 运行期间，只要 `bash` 命令行中任何位置出现 `sleep` 后跟两个字面秒数及以上的时长（轮询循环也算），扩展就会拦截该命令行：`sleep 30`、`npm test; sleep 30`、`until gh pr checks 1; do sleep 30; done`、`sleep infinity`。更短的 sleep、以 `sleep 30 &` 形式放入后台的 sleep、以及引号字符串、注释或 heredoc 中的 `sleep` 都能正常运行。这条规则宁可误拦，所以 `timeout 5 sleep 30` 和后台组里的 sleep 也会被拦截。完成通知会自行到达，继续做别的事或结束你的回合即可。
+- agent 的状态跟随其进程。`completed` 表示子进程已退出，`stop_agent` 也只在子进程退出后才报告 `stopped`，所以 Claude Code 那条关于 `completed` 但仍在运行的 agent 的告诫不适用于 agent 本身。停止一个 agent，与会话关闭时停掉所有 agent 一样，会终结子 pi 进程及其仍在运行的 `bash` 命令，因为 Pi 在 SIGTERM 时会杀掉该命令的进程树。已结束的 `bash` 命令留在后台的进程（`cmd &`、`nohup cmd`）运行在自己的进程组里，会比 agent 活得久；要由你自己去停。被停 agent 的通知加入对话但不开启新回合，因为 `stop_agent` 已经返回。
+- agent 属于启动它的会话。退出、重载、启动、恢复或 fork 会话都会停掉所有运行中的 agent，父进程退出时也会通知其 agent 停止。恢复时，仍在启动它的 Pi 进程下运行的 agent 不被打扰。进程身份与保存记录匹配的孤儿会被通知停止，并在其进程退出之前对 `send_message` 和 `stop_agent` 不可用。若身份信息不足以安全地发信号，其进程保持原样，在确认退出之前拒绝继续。只有到那时，恢复的 agent 才被标记为 `stopped` 并允许恢复。
+- 向运行中的 agent 发 `send_message` 等于在子进程 stdin 上做一次 RPC `steer`。agent 会在当前工具调用之后读到它（与 Claude Code 相同），在同一 run 中继续，并发出一条完成通知。被子进程拒绝的消息返回错误，agent 继续运行。发给已结束 agent 的消息会在后台恢复其会话，并带着它此前各次运行的上下文。在 agent 已收尾但进程尚未退出时到达的消息，会在进程退出后恢复该 agent。
+- 角色值的 `@<level>` 会挑选与 Claude Code 上相同的 effort agent，扩展把该级别以 `--thinking` 传给子进程。`session` 或未设 effort 的 agent，则以父进程当前的 thinking 级别运行子进程。
+- 其余政策不变。传文件指针而非内联上下文，写入型 worker 各给一个工作树，每个 subagent 的 diff 都由你亲自审查。
 
-## Model names
+## 模型名
 
-Skills name models by the Claude aliases in their Models sections. On Pi, pass the alias as the `agent` tool's `model`. The pstack extension resolves it in the column of the provider the session's current model comes from, and in the `anthropic` column for any other provider:
+skill 在各自 Models 一节用 Claude 别名指名模型。在 Pi 上，把别名作为 `agent` 工具的 `model` 传入。pstack 扩展会按会话当前模型所属 provider 的列解析它，其他 provider 则按 `anthropic` 列解析：
 
 | Alias | `anthropic` | `openai` | `openai-codex` |
 | --- | --- | --- | --- |
@@ -56,58 +56,58 @@ Skills name models by the Claude aliases in their Models sections. On Pi, pass t
 | `sonnet` | `anthropic/claude-sonnet-5-5` | `openai/gpt-6-sol` | `openai-codex/gpt-6-sol` |
 | `haiku` | `anthropic/claude-haiku-4-5` | `openai/gpt-6-luna` | `openai-codex/gpt-6-luna` |
 
-Pi warns that Anthropic bills Claude used through Pi per token, as extra usage, even on a Claude subscription. Pi shows that warning only in interactive mode, never for the `pi --mode rpc` children the `agent` tool runs.
+Pi 会警告：即使在 Claude 订阅下，通过 Pi 使用 Claude 也按 token 计费，算作额外用量。该警告只在交互模式显示，`agent` 工具运行的 `pi --mode rpc` 子进程永远不会看到。
 
-A `pi models: opus=<provider/id>, sonnet=<provider/id>` line in the Pi override sheet points each alias it names at another Pi model, whatever the session's provider. Add one when the session's provider has no column above and Pi has no credentials for `anthropic`, because each alias then resolves to an `anthropic/*` ID and the `agent` call fails with `No API key found for anthropic`. The `agent` tool also takes a full `provider/id`, passed through unchanged, and `inherit-parent`, `auto`, or no `model` runs the child on the parent's current model. Diverse-model panels (`arena`, `architect`, `interrogate`, `how` critics, `reflect`) stay diverse only while their aliases resolve to distinct models. If one model family is all you can reach, vary the reasoning effort and note in the verdict that diversity was reduced.
+Pi 覆盖表中的一行 `pi models: opus=<provider/id>, sonnet=<provider/id>` 会把它点名的每个别名指向另一个 Pi 模型，无论会话的 provider 是谁。当会话的 provider 在上表没有对应列、且 Pi 没有 `anthropic` 凭据时，就加一行，因为此时每个别名都会解析成 `anthropic/*` ID，`agent` 调用会报 `No API key found for anthropic`。`agent` 工具也接受完整的 `provider/id`，原样透传；`inherit-parent`、`auto` 或不填 `model` 则让子进程用父进程当前模型。多模型面板（`arena`、`architect`、`interrogate`、`how` 批评者、`reflect`）只有在各别名解析到不同模型时才保持多样性。如果只能接触到一个模型家族，就改变推理强度，并在结论中注明多样性有所降低。
 
-`/setup-pstack` writes the configured model list. On Pi, keep the aliases and remap them with `pi models:`.
+`/setup-pstack` 写出配置好的模型列表。在 Pi 上，保留这些别名，用 `pi models:` 重新映射。
 
-## Session routing
+## 会话路由
 
-The pstack Pi extension adds the poteto-mode mandate, the text the Claude Code and Codex `SessionStart` hook injects, to the system prompt at every agent start, so the mandate survives compaction. It also adds the Pi override sheet, because Pi has no include syntax for context files. The sheet is `pstack-models.md` in the Pi agent directory, which is `$PI_CODING_AGENT_DIR` when set and `~/.pi/agent` otherwise. `session hook: off` in the sheet stops the mandate. Child agents that the `agent` tool starts get the sheet but not the mandate, as Claude Code subagents see CLAUDE.md but run no `SessionStart` hook. Every session, child agents and sessions with the hook off included, also gets a pointer to this file and Claude Code's sentence on making independent tool calls in one response.
+pstack Pi 扩展会在每次 agent 启动时把 poteto-mode 的路由指令（即 Claude Code 与 Codex 的 `SessionStart` hook 注入的那段文本）加入系统 prompt，所以该指令能挺过 compaction。它还会加入 Pi 覆盖表，因为 Pi 没有上下文文件的 include 语法。该表是 Pi agent 目录下的 `pstack-models.md`，设置了 `$PI_CODING_AGENT_DIR` 时在该目录，否则在 `~/.pi/agent`。表里的 `session hook: off` 会停用该指令。`agent` 工具启动的子 agent 拿到表但拿不到指令，正如 Claude Code 的 subagent 能看到 CLAUDE.md 却不运行 `SessionStart` hook。每个会话（包括子 agent 和关闭 hook 的会话）还会拿到指向本文件的指针，以及 Claude Code 关于在同一条回复里发起独立工具调用的那句话。
 
-Without the extension nothing is injected. Request `poteto-mode` explicitly with `/skill:poteto-mode`, or add a standing instruction to `AGENTS.md`.
+没有扩展就什么都不注入。用 `/skill:poteto-mode` 显式请求 `poteto-mode`，或在 `AGENTS.md` 里加一条常设指令。
 
-## Driver and bundled skills pstack references
+## pstack 引用的 driver 与内置 skill
 
-The [driver policy](../SKILL.md#non-negotiables) selects the app driver. For skills and drivers named by these workflows, use these Pi equivalents:
+[驱动器政策](../SKILL.md#non-negotiables)决定选用哪个 app 驱动器。这些工作流点名的 skill 与驱动器，在 Pi 上用这些等价物：
 
-| Skill or driver named in pstack | On Pi |
-|---------------------------------|-------|
-| `run` (drive a CLI/TUI to see a change work) | Pi has no `run` skill. Run the app yourself via `bash` and observe the real output. |
-| `verify` (the project's `.claude/skills/verify/`, or Claude Code's bundled `/verify`) | Pi does not discover `.claude/skills/`. Read the project skill's SKILL.md by path, or add `../.claude/skills` to the `skills` list in `.pi/settings.json`. Without a project skill, drive the app as for `run`. |
-| Project UI driver | Drive the UI with whatever automation you have, or hand the user a concrete manual check. Do not claim done without observing the artifact. |
-| `plugin-dev:skill-development` (Claude's SKILL.md authoring guidance) | Follow Pi's skills documentation and the Agent Skills specification. Keep `name` + `description` frontmatter, name the directory after the skill, and use progressive disclosure. |
-| `loop` (recurring/self-paced re-invocation, used by `babysit`) | The extension's `/loop [interval] <prompt>` command. With an interval it re-fires on that cadence. Without one the prompt runs now and the model paces itself with `schedule_wakeup`. `/loop stop` cancels, also while an iteration runs: nothing that run then schedules is armed. A `/loop` given during a run starts once that run ends. |
+| pstack 点名的 skill 或驱动器 | 在 Pi 上 |
+|------------------------------|----------|
+| `run`（驱动 CLI/TUI 确认改动生效） | Pi 没有 `run` skill。通过 `bash` 亲自运行 app 并观察真实输出。 |
+| `verify`（项目的 `.claude/skills/verify/`，或 Claude Code 捆绑的 `/verify`） | Pi 不会发现 `.claude/skills/`。按路径直接读项目 skill 的 SKILL.md，或在 `.pi/settings.json` 的 `skills` 列表里加上 `../.claude/skills`。没有项目 skill 时，像 `run` 那样亲自驱动 app。 |
+| 项目 UI 驱动器 | 用手头任何自动化驱动 UI，或给用户一个具体的手动检查。未亲眼确认产物之前不要宣称完成。 |
+| `plugin-dev:skill-development`（Claude 的 SKILL.md 编写指南） | 遵循 Pi 的 skills 文档与 Agent Skills 规范。保留 `name` + `description` frontmatter，目录以 skill 命名，并使用渐进式披露。 |
+| `loop`（周期性/自定节奏的再次调用，`babysit` 会用到） | 扩展的 `/loop [interval] <prompt>` 命令。带 interval 时按该节奏反复触发；不带时 prompt 立即运行，模型用 `schedule_wakeup` 自定节奏。`/loop stop` 取消，迭代进行中也可以：该 run 之后调度的任何东西都不会被布置。在一次 run 期间发出的 `/loop` 会在该 run 结束后开始。 |
 
-## Per-skill notes
+## 各 skill 的注意事项
 
-No skill file carries a Pi line. poteto-mode's Platform Adaptation section points here once, and the extension's system prompt points here in every session, so read a skill's row before you follow that skill. Most skills need only the tables above. These need one more mapping:
+没有任何 skill 文件带有 Pi 相关行。poteto-mode 的平台适配一节会指向这里一次，扩展的系统 prompt 在每个会话都指向这里，所以在照某个 skill 行事之前，先读它在表中的那一行。多数 skill 只需上面的表。下面这些还需要一条映射：
 
-| Skill | On Pi |
-|-------|-------|
-| `poteto-mode` | The todolist falls back to `todo.md`, and the Subagents defaults map through Subagent policy above. The Eval and Session pickup playbooks read transcripts from the Pi sessions directory (see Tool actions). |
-| `interrogate` | Reviewers dispatch through `agent` with the same `subagent_type`, `model`, and `readonly` (see Subagent policy). Keep the panel on distinct models (see Model names). |
-| `recall` | Search the Pi sessions directory for this workspace (see Tool actions). Do not list or read `~/.claude/projects/`: it holds Claude Code transcripts, not this session's history. Match on `type: "message"` entries and their `message.role`. |
-| `show-me-your-work` | Check the log against this run's Pi session file (see Tool actions), not a Claude Code transcript. |
-| `setup-pstack` | The Pi sheet is `pstack-models.md` in the Pi agent directory (see Session routing), and the extension loads it, so no include line is needed. List models with `pi --list-models`. For a family whose model is not listed, offer a `pi models:` line (see Model names). The role rows and the five effort levels are identical. The `session hook` line applies on Pi too, where `off` stops the extension adding the mandate. When the session runs on `anthropic`, tell the user that Pi bills Claude per token as extra usage and that each multi-model panel multiplies that cost. |
-| `no-comments` | `pstack:comment-sicko` resolves through `agent` as written. Pass it the scope, not a request to run `/no-comments`, and run it without `isolation: "worktree"`, because a worktree starts from `HEAD` and lacks the scope's uncommitted changes. |
-| `teach` | Running `how` and `why` in parallel maps to two background `agent` calls. Pi has no image generation tool, so draw with Mermaid or plain text. |
-| `create-verification-skill` | The generated skill lands under `.claude/skills/verify/` on Claude Code. Write it where Pi discovers project skills, `.pi/skills/verify/` or `.agents/skills/verify/`, instead. The app-driving harness is platform-neutral. |
-| `maintain-verification-skill` | The parallel per-feature source readers map to background `agent` calls. The project-local skill lives under `.pi/skills/` or `.agents/skills/`, not `.claude/skills/`. |
-| `babysit` | `loop` and `AskUserQuestion` resolve through the tables above. |
-| `automate-me` | `plugin-dev:skill-development` resolves through the skills table above. The workspace's transcripts are its Pi sessions directory (see Tool actions). Pi does not discover `.claude/skills/`, so write the mode skill to `.pi/skills/<handle>-mode/SKILL.md` or `.agents/skills/<handle>-mode/SKILL.md` instead. |
-| `architect` | The runner panel goes through the **arena** skill, so its `agent` fan-out and model aliases apply here too. |
-| `arena` | The parallel candidates and the cross-judge are background `agent` calls on the configured aliases (see Model names). |
-| `how` | The parallel explorers and the explainer are `agent` calls, and `readonly` applies as written (see Subagent policy). |
-| `reflect` | The three reviewers and the synthesizer are background `agent` calls. The transcript finder reads Pi sessions too. Pass it this workspace's Pi sessions directory (see Tool actions) in place of Claude Code's projects directory. It follows the session's active branch to its opening prompt. Skill files load from the Pi package directory that `pi list` shows, not `~/.claude/plugins/`, so treat reads under that directory as plugin skill reads. |
-| `swarm` | Each worker is a background `agent` call on the configured alias. Give each writing worker `isolation: "worktree"` or its own output directory (see Subagent policy above). |
-| `why` | The parallel investigators and the synthesizer are background `agent` calls. List MCP servers from the tools Pi exposes to the session or `pi mcp list`, not from `.mcp.json` or `claude mcp list`. Spawn the synthesizer only after every investigator's completion notice has arrived, because those notices carry the findings the synthesizer gets. A `send_message` to an investigator returns no findings, so wait for its notice. |
+| Skill | 在 Pi 上 |
+|-------|----------|
+| `poteto-mode` | todolist 退化为 `todo.md`，Subagents 默认值按上面的 Subagent 策略映射。Eval 和 Session pickup playbook 从 Pi sessions 目录读转录（见工具操作）。 |
+| `interrogate` | 审查者通过 `agent` 派发，`subagent_type`、`model` 和 `readonly` 照旧（见 Subagent 策略）。保持面板用彼此不同的模型（见模型名）。 |
+| `recall` | 在 Pi sessions 目录中搜索本工作区（见工具操作）。不要列出或读取 `~/.claude/projects/`：那里是 Claude Code 的转录，不是本会话的历史。按 `type: "message"` 条目及其 `message.role` 匹配。 |
+| `show-me-your-work` | 对照本次运行的 Pi 会话文件（见工具操作）核对日志，而不是 Claude Code 转录。 |
+| `setup-pstack` | Pi 的表是 Pi agent 目录下的 `pstack-models.md`（见会话路由），扩展会加载它，所以不需要 include 行。用 `pi --list-models` 列出模型。某个家族的模型不在列表中时，提供一条 `pi models:` 行（见模型名）。角色行和五个 effort 级别完全相同。`session hook` 行在 Pi 上同样生效，`off` 会阻止扩展加入路由指令。当会话跑在 `anthropic` 上时，告诉用户 Pi 把通过它使用的 Claude 按 token 计为额外用量，而每个多模型面板都会成倍放大这笔开销。 |
+| `no-comments` | `pstack:comment-sicko` 按原文通过 `agent` 解析。给它的是作用域，而不是去运行 `/no-comments` 的请求，并且不要带 `isolation: "worktree"` 运行，因为工作树从 `HEAD` 开始，缺少作用域内未提交的改动。 |
+| `teach` | 并行运行 `how` 与 `why` 映射为两个后台 `agent` 调用。Pi 没有图像生成工具，所以用 Mermaid 或纯文本画图。 |
+| `create-verification-skill` | 生成的 skill 在 Claude Code 上落在 `.claude/skills/verify/`。改写到 Pi 能发现项目 skill 的位置，即 `.pi/skills/verify/` 或 `.agents/skills/verify/`。驱动 app 的测试装置与平台无关。 |
+| `maintain-verification-skill` | 并行的逐特性源码阅读器映射为后台 `agent` 调用。项目级 skill 位于 `.pi/skills/` 或 `.agents/skills/`，不在 `.claude/skills/`。 |
+| `babysit` | `loop` 与 `AskUserQuestion` 按上面的表解析。 |
+| `automate-me` | `plugin-dev:skill-development` 按上面的 skill 表解析。工作区的转录就是它的 Pi sessions 目录（见工具操作）。Pi 不会发现 `.claude/skills/`，所以把 mode skill 写到 `.pi/skills/<handle>-mode/SKILL.md` 或 `.agents/skills/<handle>-mode/SKILL.md`。 |
+| `architect` | runner 面板经由 **arena** skill，其 `agent` 扇出与模型别名同样适用。 |
+| `arena` | 并行候选与交叉评审都是按配置别名的后台 `agent` 调用（见模型名）。 |
+| `how` | 并行探索者与讲解者都是 `agent` 调用，`readonly` 按原文生效（见 Subagent 策略）。 |
+| `reflect` | 三位审查者与综合者都是后台 `agent` 调用。转录查找器也能读 Pi 会话。用它本工作区的 Pi sessions 目录（见工具操作）替代 Claude Code 的 projects 目录。它会沿会话的活动分支追溯到开场 prompt。skill 文件从 `pi list` 显示的 Pi 包目录加载，而非 `~/.claude/plugins/`，所以对该目录下的读取按插件 skill 读取对待。 |
+| `swarm` | 每个 worker 都是一次按配置别名的后台 `agent` 调用。给每个写入型 worker `isolation: "worktree"` 或独立的输出目录（见上面的 Subagent 策略）。 |
+| `why` | 并行调查者与综合者都是后台 `agent` 调用。从 Pi 暴露给会话的工具或 `pi mcp list` 列出 MCP server，不要从 `.mcp.json` 或 `claude mcp list` 取。只有在每位调查者的完成通知都到达之后才生成综合者，因为那些通知携带着综合者要用的发现。向调查者发 `send_message` 拿不到发现，所以要等它的通知。 |
 
-## Vendored scripts
+## 随附脚本
 
-`skills/poteto-mode/scripts/` ships the `watch-pr` PR watcher, the `orch` store CLI, and `worktree-audit.mjs`. These scripts use bun and Node.js and run the same on Pi; invoke them through `bash`. They need `bun`, `gh`, and (for stack work) `gt`. Run `worktree-audit.mjs` with `node`, as its shebang does. The audit follows each link in a worktree's ancestor directories with `stat` and matches it by the directory it lands on, under bun and node alike. A worktree whose own path bun cannot resolve loses its last chat and lands in `review`. A dangling or looping link is ignored. Any other link that `stat` cannot follow puts every worktree under the link's directory in `review`, with a warning that names the link. `worktree-audit.mjs` finds each worktree's last chat in every runtime's transcript directory that exists: Claude Code's projects under `$CLAUDE_CONFIG_DIR` (default `~/.claude`), Codex's sessions and archived sessions under `$CODEX_HOME` (default `~/.codex`), and Pi's `sessions/` and the pstack extension's subagent sessions under `$PI_CODING_AGENT_DIR` (default `~/.pi/agent`). Pass transcript directories after the repo path to scan others instead. It imports the transcript walker from `skills/reflect/scripts/find-transcript.mjs`, so keep the `reflect` skill installed beside `poteto-mode`.
+`skills/poteto-mode/scripts/` 附带 `watch-pr` PR 监视器、`orch` 存储 CLI 和 `worktree-audit.mjs`。这些脚本用 bun 和 Node.js，在 Pi 上行为一致；通过 `bash` 调用。它们需要 `bun`、`gh`，栈操作还需要 `gt`。`worktree-audit.mjs` 按 shebang 用 `node` 运行。审计用 `stat` 跟踪工作树各祖先目录里的每个链接，并按链接最终落到的目录来匹配，bun 与 node 下都一样。bun 无法解析自身路径的工作树会丢失其最近聊天并落入 `review`。悬空或成环的链接会被忽略。其他任何 `stat` 无法跟随的链接，会把该链接目录下的所有工作树归入 `review`，并给出点名该链接的警告。`worktree-audit.mjs` 在每个存在的运行时转录目录里找各工作树最近的聊天：`$CLAUDE_CONFIG_DIR`（默认 `~/.claude`）下的 Claude Code projects、`$CODEX_HOME`（默认 `~/.codex`）下的 Codex sessions 与 archived sessions，以及 `$PI_CODING_AGENT_DIR`（默认 `~/.pi/agent`）下的 Pi `sessions/` 和 pstack 扩展的 subagent 会话。在仓库路径之后传入转录目录可改为扫描其他位置。它从 `skills/reflect/scripts/find-transcript.mjs` 导入转录遍历器，所以要把 `reflect` skill 与 `poteto-mode` 装在一起。
 
-## Instructions file
+## 指令文件
 
-Where a pstack skill says "your instructions file", on Pi that is `AGENTS.md` or `CLAUDE.md`, which Pi loads from the working directory and each parent directory, plus `~/.pi/agent/AGENTS.md` for every directory. On Claude Code it is `CLAUDE.md`.
+pstack skill 说“你的指令文件”时，在 Pi 上指 `AGENTS.md` 或 `CLAUDE.md`，Pi 会从工作目录和每一级父目录加载它们，外加对所有目录生效的 `~/.pi/agent/AGENTS.md`。在 Claude Code 上是 `CLAUDE.md`。

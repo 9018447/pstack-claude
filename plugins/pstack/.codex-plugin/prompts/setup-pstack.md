@@ -1,7 +1,7 @@
 ---
 name: setup-pstack
-description: configure pstack per-role model choices
+description: 配置 pstack 各角色使用哪些模型
 disable-model-invocation: true
 ---
 
-Invoke the `setup-pstack` skill and follow it.
+调用 `setup-pstack` skill 并遵循其指引。

@@ -1,7 +1,7 @@
 ---
 name: poteto-mode
-description: default entry point for any non-trivial task
+description: 任何非平凡任务的默认入口
 disable-model-invocation: true
 ---
 
-Invoke the `poteto-mode` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `poteto-mode` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

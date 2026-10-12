@@ -1,54 +1,54 @@
-# Slack Conversations
+# Slack 对话
 
-## What this source contains
+## 该来源包含什么
 
-- Real-time discussions of problems and decisions
-- Incident channels where fire-drill decisions were made
-- Design discussion threads where tradeoffs were debated
-- Questions answered by senior engineers that didn't make it into docs
-- Post-merge discussions that explain why something was revisited
-- DMs (usually not searchable, scope accordingly)
+- 对问题和决策的实时讨论
+- 做出救火式决策的事故频道
+- 争论过取舍的设计讨论串
+- 资深工程师解答过、却没进文档的问题
+- 解释某事为何被重新审视的合并后讨论
+- 私信（通常无法搜索，相应地限定预期）
 
-Slack is frequently where the *real* decisions got made, especially for smaller changes that didn't warrant a doc. It's also the most ephemeral source. Threads get deleted, channels get archived, and search quality degrades over time.
+Slack 常常是*真正*决策诞生的地方，尤其是那些不配有文档的小改动。它也是最易逝的来源：讨论串会被删，频道会被归档，搜索质量随时间衰减。
 
-## How to search it
+## 如何搜索
 
-Slack MCP tools vary. Check which Slack MCP is available and inspect its tool schema first. It may require `mcp_auth`. If authentication fails, stop and report the gap.
+Slack MCP 的工具各有不同。先确认可用的是哪个 Slack MCP，并查看它的工具 schema。它可能需要 `mcp_auth`。认证失败就停下，报告这个缺口。
 
-1. **Author-bounded search.** Messages from the PR author around the PR merge date. Limits scope dramatically and often hits gold.
-2. **Keyword search for the feature name and key symbols.** Include misspellings and casual phrasings.
-3. **PR URL search.** Slack often links PRs when they're reviewed or discussed. Search for the PR URL (or just `/pull/<number>`).
-4. **Error string search.** If the code handles a specific error, search for the error string. Incident threads often surface.
-5. **Channel-scoped search.** Narrow to likely channels:
-   - `#eng-*`. Engineering discussions
-   - `#proj-*`. Project channels
-   - `#incident-*` / `#sev-*`. Incident channels
-   - Team-specific channels for the owning team
-   - Design review channels
-6. **Thread traversal.** When you find a relevant message, fetch the whole thread. The decision often lives in the replies.
+1. **按作者限定搜索。**PR 作者在合并日期前后发的消息。能急剧缩小范围，而且常能挖到金子。
+2. **按功能名和关键符号做关键词搜索。**把拼错的写法和随意的说法也包括进来。
+3. **搜 PR URL。**PR 被评审或讨论时，Slack 里常会贴出链接。搜索 PR URL（或只搜 `/pull/<number>`）。
+4. **搜错误字符串。**如果代码处理某个特定错误，就搜那个错误字符串。事故讨论串常常会浮出来。
+5. **按频道收窄。**收窄到可能性高的频道：
+   - `#eng-*`。工程讨论
+   - `#proj-*`。项目频道
+   - `#incident-*` / `#sev-*`。事故频道
+   - 归属团队的专属频道
+   - 设计评审频道
+6. **遍历讨论串。**找到相关消息后，把整条讨论串取回来。决策常常住在回复里。
 
-## What good evidence looks like here
+## 什么样的证据算好证据
 
-- A thread where tradeoffs were explicitly debated ("I was going to use A but B is better because...")
-- An incident channel message describing the bug the code prevents
-- A question from a reviewer and an authoritative answer from the author or lead
-- A reference to a meeting where a decision was made
-- A message from a product manager or customer-facing engineer explaining a customer ask
+- 明确争论过取舍的讨论串（“我本来想用 A，但 B 更好，因为……”）
+- 事故频道里描述该代码所防 bug 的消息
+- 评审人提的一个问题，以及作者或负责人给出的权威回答
+- 对某个做出决策的会议的提及
+- 产品经理或面向客户的工程师解释客户诉求的消息
 
-## Common pitfalls
+## 常见陷阱
 
-- **Channel archaeology limits.** Very old messages may be gone due to retention policies. If you can't find anything before a certain date, note the retention cliff.
-- **Unsearched DMs.** Many decisions happen in DMs that aren't searchable. You'll miss them. That's a known limitation.
-- **Speculative jokes as "decisions."** Slack is casual. "Lol just do the thing" isn't a decision, even if it preceded the commit. Look for considered discussion.
-- **Context collapse in single messages.** Without the thread, a single message often reads differently than in context. Always fetch threads.
-- **Auth failures.** If the MCP isn't authenticated, stop. Don't make up findings. Report that Slack wasn't searchable.
+- **频道考古的极限。**很老的消息可能已因保留策略而消失。如果某个日期之前什么都找不到，把保留期断崖记下来。
+- **搜不到的私信。**许多决策发生在无法搜索的私信里。你会漏掉它们。这是已知局限。
+- **把玩笑当成“决策”。**Slack 很随意。“哈哈就那么干吧”不是决策，哪怕它出现在 commit 之前。要找经过斟酌的讨论。
+- **单条消息的语境坍缩。**脱离讨论串，单条消息读起来往往与在语境中大不一样。务必取回讨论串。
+- **认证失败。**MCP 未通过认证时就停下。不要编造发现。报告 Slack 无法搜索。
 
-## What to return
+## 需要返回什么
 
-For each relevant thread:
-- Channel name
-- Permalink or thread ID
-- Participants
-- Date range of the discussion
-- The key quotes (verbatim) with attribution
-- Context: what thread/incident/discussion this was part of
+对每个相关讨论串：
+- 频道名
+- 永久链接或 thread ID
+- 参与者
+- 讨论的日期范围
+- 关键引文（逐字），注明出自谁
+- 背景：它属于哪条讨论串/哪起事故/哪场讨论

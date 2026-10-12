@@ -1,118 +1,118 @@
 ---
 name: interrogate
-description: "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple LLM reviewers challenge changes from independent angles."
+description: "当用户使用 \"interrogate\"、\"adversarial review\"、\"multi-model review\"、\"challenge this\"、\"stress test this code\"、\"find blind spots\" 或 \"tear this apart\" 时使用。多个 LLM 审查者从各自独立的角度挑战变更。"
 ---
 
 # Interrogate
 
-On Codex, read the [platform mapping](../poteto-mode/references/codex-tools.md), including its per-skill notes, before following this skill.
+在 Codex 上，先阅读[平台映射](../poteto-mode/references/codex-tools.md)（包括其中针对每个 skill 的说明），再遵循本 skill。
 
-On GitHub Copilot, read the [platform mapping](../poteto-mode/references/copilot-tools.md), including its per-skill notes, before following this skill.
+在 GitHub Copilot 上，先阅读[平台映射](../poteto-mode/references/copilot-tools.md)（包括其中针对每个 skill 的说明），再遵循本 skill。
 
-Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric. The adversarial signal comes from model diversity, not assigned personas.
+为每个配置的模型派生一个 reviewer，以对抗方式审查代码变更。每个模型拿到相同的 prompt 和 rubric（评分细则）。对抗性来自模型多样性，而不是被指派的人设。
 
-The deliverable is a synthesized verdict. Do NOT auto-apply changes.
+最终交付物是一份综合后的裁决。不要自动应用修改。
 
-## Step 1, Determine Scope
+## 第 1 步：确定范围
 
-Identify what to review from context:
+根据上下文确定要审查的内容：
 
-- If the user points at specific files or a diff, use that
-- If on a feature branch, run `git diff main...HEAD` (or the appropriate base branch) for the full changeset
-- If the user's message references recent work, gather the relevant files
+- 如果用户指明了具体文件或某个 diff，就直接使用
+- 如果当前在 feature branch 上，运行 `git diff main...HEAD`（或相应的基础分支）获取完整变更集
+- 如果用户的消息提到了最近的工作，就收集相关文件
 
-Package the diff (or file contents) plus any surrounding context files the reviewers need to understand the code.
+将 diff（或文件内容）连同 reviewer 理解代码所需的周边上下文文件一起打包。
 
-## Step 2, State the Intent
+## 第 2 步：陈述意图
 
-Before spawning reviewers, state the intent explicitly. Derive this from:
+在派生 reviewer 之前，先明确陈述意图。从以下来源推导：
 
-- The user's message
-- Commit messages
-- PR description if one exists
-- The code itself
+- 用户的消息
+- 提交信息（commit message）
+- PR 描述（如果存在）
+- 代码本身
 
-Write one clear paragraph. If you're unsure about the intent, ask the user before proceeding.
+写一段清晰的话。如果对意图没有把握，先询问用户再继续。
 
-## Step 3, Spawn Reviewers
+## 第 3 步：派生 reviewer
 
-Launch all reviewers in a single message using the `Agent` tool. Use the `interrogate reviewers` line in the `pstack-models.md` override sheet (`/setup-pstack` lists its path per runtime), one reviewer per entry, extending or shrinking the Reviewer labels below to the configured entry count. If the sheet or that line is missing, use the table defaults.
+用 `Agent` 工具在一条消息中派生所有 reviewer。使用 `pstack-models.md` override sheet 中的 `interrogate reviewers` 行（`/setup-pstack` 会列出它在各运行时下的路径），每个条目对应一个 reviewer，并按配置的条目数量增减下方的 Reviewer 标签。如果 override sheet 或该行缺失，就使用表格默认值。
 
-| Subagent | Default model |
+| Subagent | 默认模型 |
 |----------|---------------|
 | Reviewer A | `opus` |
 | Reviewer B | `fable` |
 | Reviewer C | `sonnet` |
 | Reviewer D | `haiku` |
 
-For each reviewer:
+每个 reviewer：
 - `subagent_type`: `general-purpose`
-- `model`: the configured `interrogate reviewers` entry, or the table default with no configured line. For an `auto` or `inherit-parent` entry, omit `model` so that reviewer runs on the parent model.
+- `model`: 配置的 `interrogate reviewers` 条目；没有配置行时用表格默认值。条目为 `auto` 或 `inherit-parent` 时省略 `model`，让该 reviewer 运行在父级模型上。
 - `readonly`: `true`
 
-If the `Agent` tool rejects a configured entry, run that reviewer on the table default of its family and say so. Families go by model name, such as Opus, Fable, or Sonnet. With no family match, use Reviewer A's default. If it rejects a table default, check the valid slugs in the `Agent` tool's error message, pick the closest equivalent (prefer the same family and reasoning tier), spawn with it, and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
+如果 `Agent` 工具拒绝某个配置条目，就让该 reviewer 改用其所属家族的表格默认值，并说明这一点。家族按模型名称划分，例如 Opus、Fable 或 Sonnet。没有匹配的家族时，用 Reviewer A 的默认值。如果工具拒绝某个表格默认值，就查看 `Agent` 工具错误信息中的有效 slug，选一个最接近的等价项（优先同一家族、同一推理档位），用它派生，并另开一个 PR 更新默认表格。不要因 slug 问题阻塞审查。绝不要把 alias 条目当作被拒绝的 slug，也不要对它套用上述任何一种回退。
 
-Read `references/reviewer-prompt.md` and fill in the template with:
-1. The stated intent
-2. The diff or file contents
-3. The review rubric from `references/rubric.md`
-4. The code-quality lens from `references/code-quality-review.md`
+阅读 `references/reviewer-prompt.md`，并在模板中填入以下内容：
+1. 已陈述的意图
+2. diff 或文件内容
+3. 来自 `references/rubric.md` 的审查 rubric
+4. 来自 `references/code-quality-review.md` 的代码质量视角
 
-The same filled template goes to all reviewers, so every model applies the code-quality lens.
+同一份填好的模板会发给所有 reviewer，因此每个模型都会应用代码质量视角。
 
-## Step 4, Synthesize
+## 第 4 步：综合
 
-As results come back, build a unified picture:
+随着结果陆续返回，构建一幅统一的图景：
 
-1. **Parse all findings** from the reviewers
-2. **Identify consensus**. Findings raised by 2+ models independently are highest signal.
-3. **Identify lone-model findings**. Still worth reading, but weight accordingly.
-4. **Deduplicate**. Different models may describe the same issue differently. Merge these and note which models raised it.
-5. **Note disagreements**. If one model flags something and another explicitly says the opposite, that's useful context for the verdict.
+1. **解析所有发现项**（出自各 reviewer）
+2. **识别共识**。由 2 个及以上模型独立提出的发现项信号最强。
+3. **识别单一模型的发现项**。仍值得阅读，但要相应降低权重。
+4. **去重**。不同模型可能用不同说法描述同一个问题。合并它们，并注明由哪些模型提出。
+5. **记录分歧**。如果一个模型指出某个问题，而另一个模型明确表达了相反意见，这是裁决时有用的背景信息。
 
-## Step 5, Lead Judgment
+## 第 5 步：主审判断
 
-You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator.
+你是主审（lead reviewer），一名务实的资深工程师，而不是中立的汇总器。
 
-Read `references/lead-judgment.md` for the full framework.
+阅读 `references/lead-judgment.md`，其中有完整框架。
 
-Categorize every finding using these buckets:
+用以下类别给每一条发现项归类：
 
-- **Act on**. Real issues affecting correctness, security, or maintainability given the actual goals. These would block a real PR.
-- **Consider**. Legitimate points, but you're not sure they outweigh the cost of addressing them right now. Worth the user's attention.
-- **Noted**. Technically valid but not actionable. Context-dependent, premature optimization, or low-impact given the current stage.
-- **Dismissed**. Wrong, nitpicky, or missing context. Brief explanation why.
+- **立即处理**。在真实目标下影响正确性、安全性或可维护性的真问题。它们会阻塞一个真实的 PR。
+- **值得斟酌**。有道理的观点，但你不确定现在处理它的收益能否盖过成本。值得用户注意。
+- **已记录**。技术上成立但不可执行。依赖上下文、属过早优化，或就当前阶段而言影响很小。
+- **已驳回**。错误的、吹毛求疵的，或缺少上下文的。附一句简要理由。
 
-For each finding, include:
-- Which model(s) raised it
-- The category (act on / consider / noted / dismissed)
-- A one-line rationale for the categorization
+对每条发现项，写明：
+- 由哪个（哪些）模型提出
+- 类别（立即处理 / 值得斟酌 / 已记录 / 已驳回）
+- 一句话说明归类理由
 
-## Output Format
+## 输出格式
 
-Present the verdict in this structure:
+按以下结构呈现裁决：
 
-### Intent
-> [The stated intent paragraph from Step 2]
+### 意图
+> [第 2 步中陈述的意图段落]
 
-### Reviewers
-- Reviewer [label]: [model name], [N findings] (one bullet per reviewer)
+### 审查者
+- Reviewer [标签]：[模型名]，[N 条发现项]（每个 reviewer 一条）
 
-### Act On
-[Findings that should be addressed. For each: description, which models raised it, why it matters.]
+### 立即处理
+[应当处理的发现项。每条包括：描述、由哪些模型提出、为什么重要。]
 
-### Consider
-[Findings worth thinking about. For each: description, which models raised it, tradeoff involved.]
+### 值得斟酌
+[值得思考的发现项。每条包括：描述、由哪些模型提出、涉及的权衡。]
 
-### Noted
-[Valid but low-priority. Brief list.]
+### 已记录
+[有效但优先级低。简要列出。]
 
-### Dismissed
-[Rejected findings with brief rationale.]
+### 已驳回
+[被驳回的发现项及简要理由。]
 
-### Agreement Map
-[Where did models agree, where did they diverge, and what does the pattern of agreement/disagreement tell us?]
+### 共识图谱
+[模型们在哪些地方一致、哪些地方分歧？这种一致 / 分歧的模式说明了什么？]
 
-## Reasoning effort
+## 推理力度（reasoning effort）
 
-A role value in the override sheet may name a reasoning effort after its model, as in `opus @xhigh`. Levels on Claude Code: `low`, `medium`, `high`, `xhigh`, `max`. Which ones apply depends on the model. A value without `@` takes the sheet's `default effort` line, a level or `session`, and `session` when the sheet has no such line. `session` sets no effort, so the dispatch is the usual one. Strip the suffix before reading the model: `inherit-parent` or `auto` still omits `model` at every level, and a model name is passed as `model`. On Claude Code, a level picks the effort agent from the `subagent_type` you would otherwise use. `pstack:poteto-agent` becomes `subagent_type: "pstack:poteto-agent-<level>"`. `general-purpose`, or no `subagent_type`, becomes `subagent_type: "pstack:effort-<level>"`. The effort agents set only `effort`, so the model you pass still decides the model. On Codex, pass the level as `spawn_agent`'s `reasoning_effort` and keep the usual instructions.
+override sheet 中的 role 值可以在模型名后面指定推理力度，例如 `opus @xhigh`。Claude Code 上的档位：`low`、`medium`、`high`、`xhigh`、`max`。哪些档位可用取决于模型。不带 `@` 的值取 sheet 的 `default effort` 行（一个档位或 `session`）；sheet 没有这一行时取 `session`。`session` 不设置力度，因此按常规方式派发。读取模型之前先剥掉后缀：无论哪一档，`inherit-parent` 或 `auto` 仍然省略 `model`，模型名则作为 `model` 传入。在 Claude Code 上，档位会基于你原本要用的 `subagent_type` 选用对应的 effort agent：`pstack:poteto-agent` 变为 `subagent_type: "pstack:poteto-agent-<level>"`；`general-purpose` 或没有 `subagent_type` 时变为 `subagent_type: "pstack:effort-<level>"`。这些 effort agent 只设置 `effort`，因此你传入的模型仍然决定实际模型。在 Codex 上，把档位作为 `spawn_agent` 的 `reasoning_effort` 传入，其余指令照常。

@@ -1,17 +1,17 @@
 ---
 name: principle-test-behavior-not-implementation
-description: "Apply when you write, change, or keep a test. Identify a relevant defect and check that the test detects it. Assert the required result or observable effect, including absence when the contract requires it."
+description: "写、改或保留一个测试时应用。找出一个相关缺陷，确认测试能检测出它。断言所需结果或可观察效果；契约要求缺席时，也断言缺席。"
 user-invocable: false
 ---
 
-# Test behavior, not implementation
+# 测试行为，而非实现（Test Behavior, Not Implementation）
 
-Before keeping a test, name a relevant defect and determine whether the complete test arrangement detects it. Where practical, introduce that defect temporarily and observe the failure. Exercise the subject through its public interface and check the required result or effect.
+保留一个测试之前，先说出一个相关缺陷，并判断完整的测试编排能否检测出它。可行时，临时引入该缺陷并观察失败。通过被测对象的公共接口驱动它，检查所需的结果或效果。
 
-- A missing-result experiment helps when the contract requires a result. `toBeDefined` detects a missing result, but accepts the wrong one. Strengthen it to check the particular result when correctness requires one.
-- Keep absence assertions when absence is required. For a denied operation that must send no email, exercise the denial and check the outbox is empty. Temporarily make the denied path send an email and confirm the test fails. An assertion on absence does not require a positive case in the same test.
-- Keep fixed-value checks when the value is an explicit user-facing contract, such as a promised default or instruction. Name that contract and the defect a changed value would cause. Avoid freezing incidental constants or prompt wording with no such contract.
-- Keep comparisons between results when disagreement exposes a real defect. An expected result computed through the same faulty path as the actual result can confirm itself. Use an independent expectation or a relation that the identified defect actually violates.
-- Assess shared setup and the test body together. Calling the subject in `beforeEach` is valid; asserting only untouched fixture data is not.
+- 当契约要求有结果时，做"结果缺失"实验很有用。`toBeDefined` 能检测结果缺失，却放行错误的结果。当正确性依赖具体结果时，把它加强为检查那个具体结果。
+- 当契约要求缺席时，保留缺席断言。对一个必须不发邮件的被拒操作，触发拒绝并检查 outbox 为空。临时让被拒路径真的发一封邮件，确认测试随之失败。缺席断言不需要在同一测试里再配一个正例。
+- 当值本身就是明确的面向用户的契约（比如承诺过的默认值或指令）时，保留固定值检查。说出那个契约以及值一变会导致的缺陷。对没有这类契约性质的偶发常量或 prompt 措辞，不要冻结。
+- 当结果之间的分歧会暴露真实缺陷时，保留结果间的比较。经由与实际结果相同的错误路径算出的期望值会自我确认。使用独立的期望值，或使用被识别出的缺陷确实会破坏的关系。
+- 把共享 setup 和测试体放在一起评估。在 `beforeEach` 里调用被测对象是有效的；只断言未被触碰的 fixture 数据则无效。
 
-Reject tests that exercise nothing relevant, assert nothing meaningful, or only show that a substitute was called without checking the required effect. Check its payload or resulting state when that establishes the contract. An assertion's syntax alone cannot tell you whether it detects a defect.
+拒绝这样的测试：没触及任何相关内容、没断言任何有意义的东西、或只证明某个替身被调用过却不检查所需效果。当检查替身的 payload 或结果状态能确立契约时，就去检查。仅凭断言的语法无法判断它能否检测出缺陷。

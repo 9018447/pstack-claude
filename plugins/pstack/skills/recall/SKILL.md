@@ -1,37 +1,37 @@
 ---
 name: recall
-description: "Reconstruct your recent working context from your own chat history, live state, and the shared record (user reports, prior fixes, incidents), then hand back a tight current-state brief. Use for 'recall my work on X', 'catch me up', 'what have I been working on', 'where did I leave off', before starting or resuming work, and before telling the user that something was never recorded."
+description: "从你自己的聊天历史、实时状态和共享记录（用户反馈、历史修复、事故）中重建近期的工作上下文，然后交回一份紧凑的现状简报。用于 'recall my work on X'、'catch me up'、'what have I been working on'、'where did I leave off'，开始或恢复工作之前，以及告诉用户某件事从未被记录之前。"
 ---
 
 # Recall
 
-On GitHub Copilot, read the [platform mapping](../poteto-mode/references/copilot-tools.md), including its per-skill notes, before following this skill.
+在 GitHub Copilot 上，执行本 skill 前先阅读[平台映射](../poteto-mode/references/copilot-tools.md)，包括其中针对各 skill 的说明。
 
-**Before you start or resume work, you rebuild the user's recent working context and hand back a tight capsule of where things stand now and what to do next.**
+**在你开始或恢复工作之前，先重建用户近期的工作上下文，并交回一份紧凑的概要：现在处于什么状态、接下来做什么。**
 
-Keep it tight and on-topic. Read only what the in-scope threads need, then stop.
+保持紧凑、紧扣主题。只读范围内各条线索所需的内容，然后停下。
 
-Your context lives in two records. Your own chat history holds what you did and decided. The shared record holds everything that happened around the same code under other names: the symptoms users keep reporting, the fixes that shipped and got reverted, the errors still firing in prod. That second record is what the **why** skill searches, across source control, the issue tracker, chat and issue channels, long-form docs, and error tracking. A feature with a long bug tail keeps most of its story there, so don't reconstruct it from your transcripts alone.
+你的上下文存在于两份记录里。你自己的聊天历史记录了你做过什么、决定过什么。共享记录则保存着围绕同一代码、以别人的名义发生的一切：用户不断反馈的症状、上线后又被回退的修复、仍在生产环境里报错的异常。第二份记录正是 **why** skill 搜索的对象，覆盖源码控制、issue 跟踪器、聊天与 issue 频道、长篇文档和错误追踪。一个 bug 长尾很长的功能，其大部分故事都保存在那里，所以不要只靠自己的转录来重建。
 
-Transcripts live at `~/.claude/projects/<encoded-cwd>/<uuid>.jsonl`, where `<encoded-cwd>` is the workspace path with the leading slash dropped and each "/" turned into "-" (so `/Users/you/proj` becomes `-Users-you-proj`). Every line is one chat message.
+转录位于 `~/.claude/projects/<encoded-cwd>/<uuid>.jsonl`，其中 `<encoded-cwd>` 是工作区路径去掉开头斜杠、并把每个 "/" 换成 "-" 后的结果（`/Users/you/proj` 变成 `-Users-you-proj`）。每一行是一条聊天消息。
 
-1. Classify, then route. One specific prior chat to resume is the `session-pickup` playbook, not this. Turning habits into a durable skill is `automate-me`. A human-readable summary of your work is a different task. Recall loads working context across recent chats before you act. If the user already gave you a full state capsule (paths, branch, the change), use it and skip the mining.
-2. Lock the scope before searching. Pin the window ("recent" is a real range, default the last 7 days), the topic if named, and the workspace (default the active one. Never read another project's transcripts without being asked). State the scope back. Never quietly turn "all" into "recent N".
-3. Fan out across your chat history. Spawn parallel subagents on a fast, cheap model, each taking a slice of the corpus. Tell every subagent to order candidates by real modification time (`ls -t`) and never by UUID name, grep the topic first and then read only the matching chats and only their relevant regions, and skip the current chat plus obvious noise (subagent, eval, and test chats). Each returns the same schema, one block per chat: topic, the user's goal, decisions, open threads, struggles and corrections, and artifacts (PRs, tickets, branches), each citing the chat UUID. For one or two chats, skip the fan-out and search directly. The raw transcripts stay in the subagents. The main thread gets only their findings.
-4. Sweep the shared record whenever the topic names a feature, file, subsystem, area, or bug. This is the default, not a judgment call, and "my work on X" does not exempt it. Hand it to the **why** skill's source investigators, but steer their question from "why was this built this way" to "what's the current state, what's been tried and didn't hold, and what are users still reporting". Reuse its per-source playbooks, run the investigators in parallel with the chat-history mining, and inherit its posture: one investigator per source, null results are findings, skip an unavailable MCP and say so. Fold what comes back into the brief. Also sweep every location the project's standing rules name for queued or recorded items (a memory directory, a decisions log, a `.planning/` tree, a project CLAUDE.md pointer) before you report anything as never recorded. A search that skips a place the project's rules name is not exhausted. Skip this step only for pure activity recall with no named target ("what did I do this week"), where your own history and live state are the entire answer.
-5. For claims about human rulings, apply [Claims about human decisions](../why/references/epistemics.md#claims-about-human-decisions). Preserve the attributable original wording and source when exact scope matters, separate agent interpretations, and treat copied summaries as one evidence chain.
-6. Verify against live state. Take the PRs, branches, and tickets that the mining and the sweep surfaced and check them with `git` and `gh`. When the answer hinges on what an agent actually did (the tools it ran, files it read, errors it hit), read the full transcript, not just a trimmed local copy.
-7. Write the brief to the contract below. Group by thread. Stay on the named topic.
+1. 先分类，再路由。恢复某个具体的历史对话是 `session-pickup` playbook 的事，不是本 skill。把习惯变成持久的 skill 是 `automate-me`。生成一份人类可读的工作总结是另一个任务。Recall 是在你行动之前，跨近期对话装载工作上下文。如果用户已经给了你完整的状态概要（路径、分支、改动），直接使用它，跳过挖掘。
+2. 搜索之前先锁定范围。确定时间窗口（"recent" 是一个明确的范围，默认最近 7 天）、主题（如果指定了）和工作区（默认当前活跃的。未经要求绝不读其他项目的转录）。把范围复述给用户。绝不悄悄把 "all" 变成 "recent N"。
+3. 并行派发到你的聊天历史。在一个快速、便宜的模型上生成并行 subagent，每个负责语料的一个切片。要求每个 subagent：按真实修改时间（`ls -t`）而非 UUID 名称排序候选；先 grep 主题，然后只读匹配的对话、且只读其中相关区域；跳过当前对话和明显的噪声（subagent、eval、测试对话）。每个 subagent 按同一 schema 返回，每个对话一块：主题、用户目标、决策、未决线索、遇到的困难与纠正、产物（PR、工单、分支），每项注明所属对话的 UUID。只有一两个对话时，跳过并行派发，直接搜索。原始转录留在 subagent 手里，主线程只拿它们的发现。
+4. 只要主题点名了某个功能、文件、子系统、领域或 bug，就扫一遍共享记录。这是默认动作，不是自行裁量，"my work on X" 也不能豁免。把它交给 **why** skill 的调查员，但把问题从"当初为什么这样设计"调整为"现状是什么、试过哪些但没立住、用户还在反馈什么"。复用它的按源分工 playbook，让调查员与聊天历史挖掘并行运行，并继承其姿态：每个来源一个调查员，空结果也是发现，跳过不可用的 MCP 并说明。把返回内容并入简报。另外，在你报告任何东西"从未被记录"之前，还要扫遍项目常设规则点名的所有存放排队或已记录事项的位置（memory 目录、决策日志、`.planning/` 目录树、项目 CLAUDE.md 指针）。漏掉项目规则点名位置的搜索不算穷尽。只有对没有点名目标的纯活动回顾（"我这周做了什么"）才跳过这一步——那时你自己的历史和实时状态就是全部答案。
+5. 涉及人类裁决的断言，应用[关于人类决定的断言](../why/references/epistemics.md#claims-about-human-decisions)。当确切的范围很重要时，保留可归属的原始措辞和来源，把 agent 的解读分开，并把转抄的摘要视为同一条证据链。
+6. 对照实时状态验证。把挖掘和扫描浮出的 PR、分支和工单，用 `git` 和 `gh` 核实。当答案取决于某个 agent 实际做了什么（运行了哪些工具、读了哪些文件、遇到了哪些错误）时，读完整转录，而不是裁剪过的本地副本。
+7. 按下面的契约写简报。按线索分组。紧扣点名的主题。
 
-## Output contract
+## 输出契约
 
-Lead with the capsule, then the thread status, then the problems, then the next move. Deeper detail goes below or gets cut.
+先给概要，再给各线索状态，然后是问题，最后是下一步。更深的细节放在后面，或者直接删掉。
 
-- **Capsule.** At most 5 bullets. What this work is and where it stands overall.
-- **Threads.** One line each, prefixed with exactly one status tag: `[merged #N]`, `[open PR #N]`, `[in flight <branch>]`, `[verified, uncommitted]`, `[reverted #N]`, or `[planned, not started]`. A thread with no tag is not done yet, so tag it.
-- **Problems.** At most 5, the recurring ones. Include the symptoms users keep reporting and any fix that shipped and was reverted, so the next attempt starts where the last one failed.
-- **Next move.** The single most useful next action, concrete.
+- **概要。** 最多 5 条 bullet。这项工作是什么、总体进展到哪。
+- **线索。** 每条一行，前缀恰好一个状态标签：`[merged #N]`、`[open PR #N]`、`[in flight <branch>]`、`[verified, uncommitted]`、`[reverted #N]` 或 `[planned, not started]`。没有标签的线索就是还没完成，所以要打上标签。
+- **问题。** 最多 5 条，选反复出现的。包括用户不断反馈的症状，以及上线后又被回退的修复，让下一次尝试从上一次失败的地方开始。
+- **下一步。** 单个最有用的后续动作，要具体。
 
-An adjacent feature or ticket stays out unless it blocks this one. When the capsule and thread lines outgrow a screen, cut detail before you cut threads. Write the brief through the **unslop** skill, cite chat findings by UUID and shared-record findings by their source (PR #, ticket ID, chat permalink, error-tracker issue), and sanitize private context before any public output.
+相邻的功能或工单不要写进来，除非它阻塞本项。当概要和线索行超过一屏时，先删细节，再删线索。简报通过 **unslop** skill 写，聊天发现以 UUID 引用，共享记录发现以其来源引用（PR 编号、工单 ID、聊天永久链接、错误追踪 issue），并在任何公开输出之前清理私密上下文。
 
-**Reply:** the brief, to the contract above.
+**回复：** 按上述契约给出简报。

@@ -1,57 +1,57 @@
-# Design red flags
+# 设计危险信号
 
-Screen every candidate before synthesis. A red flag is a reason to revise or reject the shape.
+综合之前筛查每个候选。危险信号是修改或否决该形态的理由。
 
-## Shallow module
+## 浅模块
 
-A shallow module exposes a large interface while hiding little complexity. Judge depth by the capability and policy hidden behind the public surface relative to the size of that surface. Prefer a simple interface backed by substantial behavior.
+浅模块暴露庞大的接口，却几乎不隐藏复杂性。判断深度看的是隐藏在公共表面之后的能力与策略，相对于该表面的大小。优先选择有实质行为支撑的简单接口。
 
-Do not confuse a deep module with a deep call chain. A deep call chain scatters understanding across layers. A deep module concentrates capability behind one interface.
+不要把深模块与深调用链混为一谈。深调用链把理解分散到各层。深模块把能力集中到一个接口之后。
 
-Look for these signs:
+留意这些迹象：
 
-- Callers coordinate several methods to complete one operation.
-- Public options expose internal stages or implementation choices.
-- Learning the interface does not save the caller from learning the implementation.
+- 调用者要协调多个方法才能完成一个操作。
+- 公开的选项暴露内部阶段或实现选择。
+- 学会了接口仍免不了要学会实现。
 
-## Information leakage
+## 信息泄漏
 
-Information leakage makes multiple modules depend on the same internal decision. A representation, policy, or protocol detail appears in more than one place, so changing it requires coordinated edits.
+信息泄漏让多个模块依赖同一个内部决定。某个表示、策略或协议细节出现在不止一处，改它就需要协同修改。
 
-Public re-exports of transport or wire types are leakage. Parse external data into domain types behind the interface. Keep storage schemas, framework objects, and protocol details private.
+把传输或 wire 类型公开再导出就是泄漏。在接口之后把外部数据解析为领域类型。存储 schema、框架对象和协议细节保持私有。
 
-## Temporal decomposition
+## 按时间分解
 
-Temporal decomposition organizes modules by execution order instead of the knowledge they own. Separate load, validate, transform, and save stages often repeat one representation and its invariants across several boundaries.
+按时间分解按执行顺序组织模块，而不是按它们拥有的知识。相互分离的加载、校验、转换和保存阶段，常常把同一个表示及其不变式在多个边界上重复。
 
-Group code around domain knowledge and ownership. Methods that run at different times can still belong to one module when they protect the same decisions.
+围绕领域知识和归属来组织代码。在不同时间运行的方法，只要守护的是同一批决定，仍可属于同一个模块。
 
-## Pass-through method
+## 直通方法
 
-A pass-through method forwards the same arguments to another method with the same shape. It adds a layer without hiding complexity.
+直通方法把同样的参数原样转发给另一个同样形态的方法。它增加了一层，却没有隐藏任何复杂性。
 
-Remove it or move responsibility to the module that can complete the operation. Keep a forwarding boundary only when it adds policy, adaptation, or a distinct abstraction.
+删掉它，或把职责移交给能完成该操作的模块。只有当转发边界增加了策略、适配或一个独立的抽象时才保留它。
 
-## Split ownership
+## 分裂的归属
 
-More than one module writes the same state or keeps its own copy of it. An agent that edits one writer can't see the others, so their rules diverge.
+不止一个模块写同一份状态，或各自保存自己的副本。编辑其中一个写入者的 agent 看不到其他写入者，于是规则各走各路。
 
-Give each piece of state one owner. Other modules read it or ask the owner to change it.
+每份状态只给一个所有者。其他模块读取它，或请求所有者修改它。
 
-## Two ways to do one task
+## 一个任务两条路
 
-The design supports more than one way to do the same task. An agent copies whichever way it finds first, so every way keeps gaining callers.
+设计为同一个任务提供了不止一种做法。agent 会复制它先找到的那种做法，于是每种做法都在不断增加调用者。
 
-Keep one way. Move callers off the others and delete them in the same change.
+只保留一种做法。把调用者迁离其他做法，并在同一次变更中删除它们。
 
-## Importable internals
+## 可被导入的内部成员
 
-A caller can import a module's internals. An agent takes the shortest path that compiles, so it imports them directly and they become part of the interface.
+调用者可以导入模块的内部成员。agent 走能编译的最短路径，所以它会直接导入它们，于是内部成员成了接口的一部分。
 
-Make internals unreachable from outside the module, so an import from outside fails the build.
+让内部成员从模块外不可达，从外部导入会直接导致构建失败。
 
-## Hand-synced list
+## 手工同步的列表
 
-Two or more places list the same items, and adding an item means editing every list. An agent that sees one list updates only that one.
+两个以上的地方罗列同样的条目，加一个条目意味着编辑每一份列表。只看到其中一份列表的 agent 只会更新那一份。
 
-Keep one list and derive the others from it. If a list can't be derived, make the build fail when the lists disagree.
+只保留一份列表，其余从它派生。如果某份列表无法派生，就让列表不一致时构建失败。

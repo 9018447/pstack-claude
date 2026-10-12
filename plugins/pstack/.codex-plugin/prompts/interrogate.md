@@ -1,7 +1,7 @@
 ---
 name: interrogate
-description: have three different models try to break a diff
+description: 让三个不同的模型尝试找出一个 diff 的破绽
 disable-model-invocation: true
 ---
 
-Invoke the `interrogate` skill and follow it.
+调用 `interrogate` skill 并遵循其指引。

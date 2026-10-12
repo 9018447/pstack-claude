@@ -1,20 +1,20 @@
-# Bugbot triage
+# Bugbot 分诊
 
-Use this reference when the Babysit playbook (`../playbooks/babysit.md`) handles Bugbot or review-automation comments. The goal is not to ignore Bugbot by default. The goal is to stop treating every comment as a required code change.
+当 Babysit playbook（`../playbooks/babysit.md`）处理 Bugbot 或审查自动化评论时，使用本参考。目标不是默认无视 Bugbot，而是不再把每条评论都当成必须执行的代码改动。
 
-## Decision rubric
+## 决策规则
 
-Classify each Bugbot thread before acting:
+行动之前，先给每条 Bugbot 线程分类：
 
-- `fix`: The comment identifies a plausible correctness, security, privacy, data loss, auth, billing, migration, idempotency, race, or shipped-behavior issue. Fix it in the lowest owning PR, then reply with the commit SHA and resolve the thread.
-- `dismiss`: The comment matches a documented low-risk noisy pattern, and the current code/context proves the concern does not need a code change. Reply with a short reason and resolve the thread.
-- `ask`: The comment is novel, high-severity, security/privacy/data-related, or ambiguous. Ask the user instead of guessing.
+- `fix`：评论指出了疑似的正确性、安全、隐私、数据丢失、认证、计费、迁移、幂等性、竞态或已上线行为问题。在最底层的归属 PR 中修复，然后回复提交 SHA 并解决该线程。
+- `dismiss`：评论命中某个已记录的低风险噪音模式，且当前代码/上下文证明该担忧无需代码改动。回复简短理由并解决该线程。
+- `ask`：评论是新颖的、高严重度的、涉及安全/隐私/数据、或含义不明。转而询问用户，不要猜。
 
-When in doubt, ask. Skipping a noisy code-quality comment is cheap; skipping a real data or security bug is not.
+拿不准就问。跳过一条吵闹的代码质量评论代价很小；跳过一个真实的数据或安全 bug 则不然。
 
-## Learned pattern format
+## 已学习模式的格式
 
-Add future patterns in this shape:
+以后新增模式按此格式添加：
 
 ```markdown
 ### <short pattern name>
@@ -26,117 +26,95 @@ Add future patterns in this shape:
 - Source: <PR/comment URL or short historical note>
 ```
 
-Use `candidate` for one or two examples. Use `recurring` after multiple real dismissals. Use `strong` only when the pattern is narrow, repeatedly verified, and low-risk.
+只有一两个例子时用 `candidate`。多次真实驳回之后用 `recurring`。只有当模式足够窄、经反复验证且低风险时才用 `strong`。
 
-## Recurring skip candidates
+## 反复出现的可跳过候选
 
-### Intentional UI or design-system visual changes
-
-- Confidence: candidate
-- Skip when: The PR description, screenshots, design review, or nearby code makes the visual change explicit, and the Bugbot comment is only restating that a shared visual default changed.
-- Do not skip when: The comment points to accessibility, focus visibility, keyboard navigation, color contrast, or a component API contract that the PR did not intentionally change.
-- Example signal: Comments about focus outlines, button sizes, spacing, or shared component visual defaults where the owner replies "intentional" or "intended".
-
-### Upstack or stack-local usage Bugbot cannot see
+### 有意为之的 UI 或设计系统视觉变更
 
 - Confidence: candidate
-- Skip when: Bugbot flags an export, component, helper, or file as unused, and the active forge's PR list and diffs, upper-stack diffs, or PR context show it is used by a later PR in the stack.
-- Do not skip when: The current PR is not part of a stack, the symbol is public API, or the supposed upstack use cannot be verified.
-- Example signal: "Exported component is never used" with a human reply like "used upstack".
+- Skip when：PR 描述、截图、设计评审或附近代码已把视觉变更写明，而 Bugbot 评论只是在复述某个共享视觉默认值变了。
+- Do not skip when：评论指向无障碍性、焦点可见性、键盘导航、颜色对比度、或 PR 并非有意更改的组件 API 契约。
+- Example signal：关于焦点轮廓、按钮尺寸、间距或共享组件视觉默认值的评论，而负责人回复“intentional”或“intended”。
 
-### Temporary duplication during parallel implementation
-
-- Confidence: candidate
-- Skip when: The PR intentionally duplicates a small amount of code to keep a new path parallel to an old path that is being deleted, replaced, or proven out.
-- Do not skip when: The duplicated code changes security, billing, data access, API behavior, or a long-lived shared abstraction would clearly reduce risk.
-- Example signal: "Significant duplication" or "duplicated validation logic" where the owner explains the old path will be deleted or the duplicate logic is intentionally local.
-
-### Existing framework or component invariant covers the warning
+### Bugbot 看不到的上游或栈内使用
 
 - Confidence: candidate
-- Skip when: The concern is already guaranteed by a shared component, framework contract, type invariant, or single source of truth visible in the current diff or nearby code.
-- Do not skip when: The invariant is assumed but not enforced, depends on timing, or crosses async/state boundaries where values can diverge.
-- Example signal: Comments about missing max-height on an inner popover when the shared popover enforces viewport bounds, or nullable values where the local checked value and passed value share the same source.
+- Skip when：Bugbot 把某个导出、组件、辅助函数或文件标为未使用，而当前托管平台的 PR 列表与 diff、上游栈的 diff、或 PR 上下文显示栈里更靠后的 PR 正在使用它。
+- Do not skip when：当前 PR 不属于任何栈、该符号是公共 API、或所谓上游使用无法验证。
+- Example signal：“Exported component is never used”，配上“used upstack”之类的人工回复。
 
-### Owner-declared follow-up or deferred cleanup
+### 并行实现期间的临时重复
 
 - Confidence: candidate
-- Skip when: The PR owner explicitly says the issue is a known follow-up, the behavior is not made worse by the current PR, and the comment is not about a high-risk area.
-- Do not skip when: The agent is acting without owner input, the issue is medium/high severity product behavior, or deferring would merge a new regression.
-- Example signal: "I'll worry about that later" or "we'll delete this eventually".
+- Skip when：PR 有意少量复制代码，让新路径与一条正在删除、替换或验证中的旧路径保持平行。
+- Do not skip when：被复制的代码涉及安全、计费、数据访问或 API 行为，或一个长期存在的共享抽象明显能降低风险。
+- Example signal：“Significant duplication”或“duplicated validation logic”，而负责人解释旧路径将被删除、或重复逻辑是有意保持局部。
 
-### Self-withdrawn or explicit false-positive rule comments
+### 既有框架或组件不变量已覆盖该警告
+
+- Confidence: candidate
+- Skip when：该担忧已由当前 diff 或附近代码中可见的共享组件、框架契约、类型不变量或单一事实来源保证。
+- Do not skip when：该不变量只是被假定而未被强制、依赖时序、或跨越数值可能分岔的异步/状态边界。
+- Example signal：共享 popover 已强制视口边界，评论却说内层 popover 缺 max-height；或本检查值与传入值同源，评论却说可空值有问题。
+
+### 负责人声明的后续跟进或推迟清理
+
+- Confidence: candidate
+- Skip when：PR 负责人明确说该问题是已知的后续跟进、当前 PR 没有使该行为变差、且评论不涉及高风险区域。
+- Do not skip when：agent 在没有负责人意见的情况下行动、问题属于中/高严重度的产品行为、或推迟会让新的回退被合并进去。
+- Example signal：“I'll worry about that later”或“we'll delete this eventually”。
+
+### 已自行撤回或明确属于误报的规则评论
 
 - Confidence: recurring
-- Skip when: The comment body or a later Bugbot reply explicitly says the finding is withdrawn, compliant, or a false positive, and the agent can verify the relevant rule locally.
-- Do not skip when: The only evidence is a human saying "false positive" on a high-risk issue without explanation.
-- Example signal: A file-naming rule comment whose body says the file is already compliant.
+- Skip when：评论正文或 Bugbot 随后的回复明确说该发现已撤回、已合规或属于误报，且 agent 能在本地核实相关规则。
+- Do not skip when：唯一证据是人类在高风险问题上说了一句“false positive”却无解释。
+- Example signal：一条文件命名规则评论，其正文说该文件已经合规。
 
-## Ask by default
+## 默认转问用户
 
-Do not auto-skip these categories, even if a previous PR dismissed something similar:
+以下类别不要自动跳过，即使之前有 PR 驳回过类似问题：
 
-- Security, privacy, auth, billing, data retention, training-data, and permission-boundary findings.
-- High-severity findings.
-- Migration, schema, idempotency, concurrency, and cross-system behavior findings.
-- Comments where the suggested fix is small and clearly reduces risk without changing product intent.
+- 安全、隐私、认证、计费、数据保留、训练数据与权限边界方面的发现。
+- 高严重度的发现。
+- 迁移、schema、幂等性、并发与跨系统行为方面的发现。
+- 建议的修复很小、且明显能降低风险而不改变产品意图的评论。
 
-Historical data showed humans sometimes dismiss security/data-flow comments. Treat those as owner judgment calls, not team-wide skip rules.
+历史数据显示，人类有时会驳回安全/数据流评论。把它们当作负责人的个别判断，而不是团队范围的跳过规则。
 
-## Candidate learnings from recent babysits
+## 近期 babysit 得出的候选经验
 
-Append new candidate learnings here during or after babysitting when they look team-useful but not yet mature. Prefer promoting recurring candidates into the section above once several PRs confirm the pattern.
+babysit 期间或之后，把看起来对团队有用但尚未成熟的候选经验追加到这里。一旦有几个 PR 证实了某个模式，优先把它从候选提升到上面一节。
 
-### Manual reimplementations of native browser behavior
-
-- Confidence: candidate
-- Skip when: Practically never. When a diff replaces native browser behavior with a manual equivalent (native sticky → JS-positioned clones, native scroll targeting → forwarded wheel/touch events, paint-order occlusion → masks/clip-path), Bugbot's logic-bug findings against that code have been consistently legitimate.
-- Do not skip when: The finding concerns event-forwarding gaps (wheel deltaMode, touch pans, scroll-chaining at edges, tap slop), mask/clip hit-testing divergence, or observer-vs-React state timing races in such code. Default to fix.
-- Example signal: "masks do not affect hit-testing", "overlay blocks wheel scroll", "ignores deltaMode", "runs in the IntersectionObserver callback before React applies state".
-- Source: one sticky-occlusion PR: six Bugbot passes, roughly eighteen findings, every one fixed rather than dismissed.
-
-### Contract-test drift claims are cheaply verifiable — run the test first
+### 手工重新实现浏览器原生行为
 
 - Confidence: candidate
-- Skip when: Never skip the verification itself; it costs one command. When a PR
-  ships a contract test that pins protocol or documentation prose (regexes over
-  a SKILL.md, snapshot of doc wording), and Bugbot claims "the test no longer
-  matches the doc" (or vice versa), run that test on the PR tip before
-  classifying. A red run confirms the claim empirically; a green run is a
-  concrete disproof for the dismissal reply.
-- Do not skip when: n/a — this is a verification shortcut, not a dismissal
-  pattern. Note that repeat-pass lean-dismiss heuristics would misfire here:
-  prose-pinning tests drift precisely BECAUSE earlier fix rounds edit the prose.
-- Example signal: "Contract test omits the pre-fix wait" on a PR whose earlier
-  fix commits reworded the pinned passage; the test run on the tip failed on
-  exactly the cited assertion.
-- Source: one prose-pinning PR with eight Bugbot passes; the claim was real on
-  pass 7 despite every earlier pass being fixed-and-resolved.
+- Skip when：实际上从不。当 diff 用手工等价物替换浏览器原生行为（原生 sticky → JS 定位克隆、原生滚动定位 → 转发的 wheel/touch 事件、绘制顺序遮挡 → mask/clip-path）时，Bugbot 对这类代码的逻辑 bug 发现一贯成立。
+- Do not skip when：发现涉及事件转发缺口（wheel deltaMode、触摸拖动、边缘滚动链、tap slop）、mask/clip 命中测试差异、或此类代码中 observer 与 React 状态的时序竞争。默认按 fix 处理。
+- Example signal：“masks do not affect hit-testing”、“overlay blocks wheel scroll”、“ignores deltaMode”、“runs in the IntersectionObserver callback before React applies state”。
+- Source：一个 sticky 遮挡 PR：六轮 Bugbot，约十八条发现，全部修复而非驳回。
 
-### Stale security-review finding already fixed later in the same PR
+### 契约测试漂移的说法验证起来很便宜，先跑测试
 
 - Confidence: candidate
-- Skip when: An agentic security review (or similar) claims a missing authz/validation call, and the current PR tip clearly includes that exact gate (with tests), typically added in a later hardening commit after the review ran.
-- Do not skip when: The cited helper is a no-op for the principal under discussion, the check runs after the side effect it guards, or coverage for the claimed principal is missing.
-- Example signal: A HIGH "missing authorization check" finding while the exact guard is already called before the side effect on the tip.
-- Source: one webhook-endpoint PR whose hardening commit postdated the review run.
+- Skip when：验证本身绝不跳过；它只花一条命令。当 PR 带有把协议或文档文字钉死的契约测试（对 SKILL.md 的正则、文档措辞快照），而 Bugbot 声称“测试与文档不再匹配”（或反之）时，先在 PR tip 上跑该测试再分类。红了一次就从经验上证实了该说法；绿了则是驳回回复里的具体反证。
+- Do not skip when：不适用，这是验证捷径，不是驳回模式。注意“多轮通过就倾向驳回”的启发式在这里会失灵：钉住文字的测试之所以漂移，恰恰是因为更早的修复轮次改动了文字。
+- Example signal：PR 的早期修复提交改写了被钉住的段落，随后出现“Contract test omits the pre-fix wait”这类说法；在 tip 上跑测试恰好挂在被引用的那条断言上。
+- Source：一个钉文字的 PR 经历八轮 Bugbot；尽管此前每轮都已修复并解决，第 7 轮的说法仍然属实。
 
-### Widening a deliberately narrow error condition would mask the real error
+### 安全审查的过时发现，同一 PR 内稍后已修复
 
 - Confidence: candidate
-- Skip when: The finding asks to broaden a narrow error condition (a specific
-  `errno`, error code, or status class) into a catch-all, and that narrowness
-  encodes a real distinction. The canonical shape is a dependency fallback
-  gated on `ENOENT`: "binary is not installed" is a different situation from
-  "the command ran and failed". Retrying on any non-zero exit would re-run a
-  legitimate failure (not found, expired auth, network) against the fallback
-  and then report the fallback's error, hiding the true one.
-- Do not skip when: The narrow condition misses a case in the SAME category
-  (another "binary unusable" errno such as `EACCES`, another transport-level
-  failure), the unhandled path loses data or leaves partial state, or the retry
-  is idempotent AND the original error is still surfaced.
-- Example signal: "only retries when X fails with ENOENT … never tries the
-  fallback even when a working Y exists", pointing at code whose fallback
-  exists for a missing dependency rather than a failed operation.
-- Source: one CLI-rename PR whose fallback existed for a missing binary rather
-  than a failed command.
+- Skip when：agentic 安全审查（或类似工具）声称缺少某个 authz/校验调用，而当前 PR tip 明确已包含该门禁（带测试），通常是在审查运行之后的后续加固提交中加上的。
+- Do not skip when：被引用的辅助函数对所讨论的主体是空操作、该检查运行在它要防护的副作用之后、或对声称主体的覆盖缺失。
+- Example signal：报了 HIGH 级“missing authorization check”，而 tip 上确切的防护调用已在副作用之前执行。
+- Source：一个 webhook 端点 PR，其加固提交晚于审查运行。
+
+### 放宽刻意收窄的错误条件会掩盖真实错误
+
+- Confidence: candidate
+- Skip when：发现要求把某个收窄的错误条件（特定 `errno`、错误码或状态类别）放宽成大杂烩，而这种窄恰恰编码了真实区别。典型形态是靠 `ENOENT` 门控的依赖兜底：“binary is not installed”和“the command ran and failed”是两种不同情况。对任何非零退出都重试，会让一个合理的失败（找不到、认证过期、网络）再去撞兜底，然后报告兜底的错误，把真错误藏起来。
+- Do not skip when：窄条件漏掉了同类情形（另一个表示“二进制不可用”的 errno 如 `EACCES`、另一种传输层失败）、未处理路径会丢数据或留下半成品状态、或重试是幂等的且原始错误仍会浮出。
+- Example signal：“only retries when X fails with ENOENT … never tries the fallback even when a working Y exists”，指向的代码里兜底是为依赖缺失而非操作失败设计的。
+- Source：一个 CLI 改名 PR，其兜底是为缺失的二进制而非失败的命令而设。

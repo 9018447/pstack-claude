@@ -1,7 +1,7 @@
 ---
 name: technical-writing
-description: write docs, RFCs, readmes, PR descriptions, and commit messages to one layered standard
+description: 按统一的分层标准撰写文档、RFC、readme、PR 描述与提交信息
 disable-model-invocation: true
 ---
 
-Invoke the `technical-writing` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `technical-writing` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

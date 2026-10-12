@@ -1,7 +1,7 @@
 ---
 name: create-verification-skill
-description: generate a project-local verification skill and feature map
+description: 生成项目本地的验证 skill 与功能映射
 disable-model-invocation: true
 ---
 
-Invoke the `create-verification-skill` skill and follow it.
+调用 `create-verification-skill` skill 并遵循其指引。

@@ -1,11 +1,11 @@
-### Visual parity
+### 视觉一致性（Visual parity）
 
-**You own pixel-exact equivalence. The baseline is the spec. You do not touch it.** Equivalence is verified by image diff, not by eye.
+**像素级等价由你负责。基线就是规格，你不碰它。** 等价靠图像 diff 验证，不靠肉眼。
 
-1. Establish the baseline first, before any migration: a visual regression harness that screenshots the current component across its states, plus the target when matching two implementations. No baseline, no parity claim. A blocking prerequisite, not a follow-up.
-2. Anti-shortcut clauses, stated and held: no harness modifications, no baseline tampering, no component restructuring to make a diff pass. If the baseline looks wrong, stop and ask, don't edit it.
-3. Migrate one component at a time. Parallelize across worktrees, one owner per component (the **separate-before-serializing-shared-state** principle skill). Shared primitives migrate first as a blocking phase.
-4. Verify each component against its baseline via image diff on the matching surface via the driver skill. A nonzero diff is a fail. Investigate the pixel delta. `/loop` per component until the diff is zero.
-5. Run **Opening a PR** per component or per safe batch.
+1. 任何迁移之前先立基线：一个视觉回归装置，给当前组件的各个状态截图；比对两个实现时还要加上目标实现。没有基线就没有一致性可言。这是阻塞前提，不是后续事项。
+2. 反捷径条款，明确说出并守住：不改装置、不篡改基线、不为让 diff 通过而重构组件。基线看起来不对，就停下来问，不要改它。
+3. 一次迁移一个组件。跨工作树并行，每组件一个 owner（**separate-before-serializing-shared-state** 原则 skill）。共享原语最先迁移，作为阻塞阶段。
+4. 通过 driver skill 在匹配表面上用图像 diff 把每个组件对着基线验证。非零 diff 即失败。查清像素差异。每个组件 `/loop` 到 diff 为零。
+5. 按组件或按安全批次运行 **Opening a PR**。
 
-**Reply:** components migrated, the diff result for each, the baseline harness location, what's left.
+**回复：**已迁移的组件、每个的 diff 结果、基线装置位置、还剩什么。

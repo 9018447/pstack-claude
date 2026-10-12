@@ -1,21 +1,21 @@
 ---
 name: principle-outcome-oriented-execution
-description: "Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code."
+description: "在有明确阶段边界的计划内重写和迁移过程中应用。向目标架构收敛；不要用用完即弃的兼容代码维持平滑的中间状态。"
 user-invocable: false
 ---
 
-# Outcome-Oriented Execution
+# 面向结果的执行（Outcome-Oriented Execution）
 
-Optimize for the intended, verifiable end state rather than preserving smooth intermediate states.
+为预期的、可验证的终态优化，而不是维持平滑的中间状态。
 
-**Why:** Keeping every intermediate step fully stable often creates temporary compatibility code that becomes long-lived debt. Converge on the target architecture and prove correctness at explicit verification boundaries.
+**为什么：**让每个中间步骤都完全稳定，常常制造出变成慢性债务的临时兼容代码。应向目标架构收敛，并在明确的验证边界处证明正确性。
 
-**Core rule:**
-- Prioritize end-state integrity over transitional stability
-- Intermediate breakage is acceptable when it is planned, scoped, and reversible
+**核心规则：**
+- 终态完整性优先于过渡期稳定
+- 中间阶段的破坏只要是有计划、有范围、可逆的，就可以接受
 
-**Guardrails:**
-- Use this for planned rewrites and migrations with explicit phase boundaries
-- Declare where temporary breakage is acceptable
-- Keep high-signal checks for actively touched areas while migrating
-- Require full static and runtime verification at plan completion
+**护栏：**
+- 只用于有明确阶段边界的计划内重写和迁移
+- 事先声明哪里允许临时破坏
+- 迁移期间对正在触碰的区域保留高信号检查
+- 计划完成时要求完整的静态与运行时验证

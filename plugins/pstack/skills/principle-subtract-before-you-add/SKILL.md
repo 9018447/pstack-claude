@@ -1,21 +1,21 @@
 ---
 name: principle-subtract-before-you-add
-description: "Apply when sequencing an addition, refactor, or rewrite. Remove dead code, redundant validators, and stub references first, then build on the simpler base."
+description: "为新增、重构或重写排序时应用。先移除死代码、冗余校验器和 stub 引用，再在更简单的基底上构建。"
 user-invocable: false
 ---
 
-# Subtract Before You Add
+# 先减后加（Subtract Before You Add）
 
-When evolving a system, remove complexity first, then build.
+演化一个系统时，先移除复杂度，再构建。
 
-**Why:** Adding to a complex system compounds complexity. Removing first leaves less code, reveals the essential structure, and usually makes the next design obvious. Default to subtraction.
+**为什么：**往复杂系统上添加会让复杂度复利。先删除会留下更少的代码、露出本质结构，通常也让下一个设计变得显而易见。默认做减法。
 
-Make simplification a continual investment. Leave the design slightly simpler and more capable behind the same or smaller surface than you found it.
+把简化当作持续投入。离开时，让设计在相同或更小的表面上，比你接手时更简单一点、也更能干一点。
 
-**The pattern:**
-- Sequence removal before construction
-- Cut before you polish (get to the minimum before investing in quality)
-- Design for observed usage, not speculative edge cases
-- No speculative validators, parsers, or guards beyond what the spec demands
-- Simplify prompts (remove redundant instructions, excessive templates)
-- When a reference has no novel content, delete it rather than leaving a stub
+**模式：**
+- 删除排在构建之前
+- 先砍再打磨（先到最小，再投入质量）
+- 为观察到的用法设计，而不是为臆测的边界情况
+- 规格没要求就不加投机性的校验器、解析器或护栏
+- 精简 prompt（删掉冗余指令和过度模板）
+- 一份引用没有独特内容时，删掉它，不要留 stub

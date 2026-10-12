@@ -1,7 +1,7 @@
 ---
 name: automate-me
-description: draft your own personal -mode skill from recent transcripts
+description: 根据最近的会话记录起草你个人的 -mode skill
 disable-model-invocation: true
 ---
 
-Invoke the `automate-me` skill and follow it.
+调用 `automate-me` skill 并遵循其指引。

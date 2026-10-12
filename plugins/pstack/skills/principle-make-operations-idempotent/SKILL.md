@@ -1,24 +1,24 @@
 ---
 name: principle-make-operations-idempotent
-description: "Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs."
+description: "设计要在崩溃、重启、重试之中运行的命令、生命周期步骤或处理循环时应用。无论之前有多少次不完整的运行，都收敛到同一个终态。"
 user-invocable: false
 ---
 
-# Make Operations Idempotent
+# 让操作幂等（Make Operations Idempotent）
 
-Design operations so they converge to the correct state regardless of how many times they run or where they start from. Every state-mutating operation should answer: "What happens if this runs twice? What happens if the previous run crashed halfway?"
+设计操作时让它们无论运行多少次、从哪里开始，都收敛到正确状态。每一个会变更状态的操作都应能回答："如果跑两次会怎样？如果上一次跑到一半崩溃了会怎样？"
 
-**Why:** Commands, lifecycle operations, and processing loops run where crashes, restarts, and retries are normal. If partial state changes the next run's outcome, every restart becomes a debugging session.
+**为什么：**命令、生命周期操作和处理循环运行的环境里，崩溃、重启和重试是常态。如果残留的部分状态会改变下一次运行的结果，每一次重启都会变成一场调试。
 
-**The pattern:**
-- Convergent startup: scan for existing state, clean stale artifacts, adopt live sessions
-- Content-based cleanup: compare by content equivalence, not creation order
-- Self-healing locks: use PID-based stale lock detection
-- Idempotent scheduling: failed work respawns cleanly, fresh input regenerated after each cycle
+**模式：**
+- 收敛式启动：扫描既有状态、清理过期产物、接管活跃会话
+- 基于内容的清理：按内容等价性比较，而不是按创建顺序
+- 自愈锁：用基于 PID 的过期锁检测
+- 幂等调度：失败的工作干净地重生，每轮之后重新生成新鲜输入
 
-**The test:**
-1. What happens if this runs twice in a row?
-2. What happens if the previous run crashed at every possible point?
-3. Does re-execution converge to the same end state?
+**检验：**
+1. 连续跑两次会怎样？
+2. 如果上一次运行在每一个可能的点上崩溃过，会怎样？
+3. 重复执行是否收敛到同一个终态？
 
-If any answer is "it depends on what state was left behind," the operation needs a reconciliation step.
+只要有一个答案是"取决于留下了什么状态"，这个操作就需要一个调和（reconciliation）步骤。

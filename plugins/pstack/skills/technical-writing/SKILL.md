@@ -1,105 +1,105 @@
 ---
 name: technical-writing
-description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
+description: "分层的技术写作标准：Diátaxis 结构、Google 开发者文档风格的句子、STE 指令规则、Global English 句法。用于 /technical-writing，或撰写与评审文档、RFC、readme、PR 描述、提交信息之时。"
 ---
 
-# Technical writing
+# 技术写作
 
-The goal is writing a tired engineer understands on the first read. Four layers get you there, one question each: what kind of document is this, how do sentences address the reader, how much does each sentence carry, and can any sentence be read two ways. Apply all four.
+目标是写出疲惫的工程师第一遍就能读懂的文字。四个层次带你到达，每个层次对应一个问题：这是哪类文档、句子如何面对读者、每句话承载多少信息、是否有句子能读出两种意思。四个层次全部应用。
 
-Three rules sit above the layers:
+三条规则凌驾于层次之上：
 
-- **Cut every word that does no work.** If the sentence survives without a word, the word goes. "In order to" is "to". "It is important to note that" is nothing.
-- **Use the short, everyday word.** "Use", not "utilize". "Help", not "facilitate". "Do", not "perform". A long word has to buy its length with precision.
-- **When a rule makes a sentence worse, fix the sentence another way or leave it alone.** The rules serve the reader. A sentence that follows every rule and sounds like a machine wrote it has failed.
+- **删掉每个不起作用的词。** 没有这个词句子照样成立，这个词就删。"In order to" 就是 "to"。"It is important to note that" 什么都不是。
+- **用短的日常词。** "Use"，不要 "utilize"。"Help"，不要 "facilitate"。"Do"，不要 "perform"。长词必须用精确性来换取它的长度。
+- **当一条规则让句子变差时，换个方式修改句子，或干脆不动它。** 规则服务于读者。一句每条规则都遵守、却读起来像机器写的句子，就是失败的句子。
 
-The codebase is the word list. Write the real symbol, file, flag, or command name, not a synonym or a description of it.
+代码库就是词表。写真实的符号、文件、标志或命令名，不要写同义词或对它的描述。
 
-Don't invent jargon. Use the words a developer would say out loud: "move", "delete", "a budget that only decreases", not "evacuate", "ratchet", or "endgame". A named pattern is fine when the doc says what it means the first time. Propose a new offender and its replacement as an addition to `unslop`'s abstract-metaphor rule in your reply, with the diff. Don't edit that skill.
+不要发明行话。用开发者会脱口而出的词："move"、"delete"、"a budget that only decreases"，而不是 "evacuate"、"ratchet" 或 "endgame"。命名模式可以用，只要文档第一次提到它时说明其含义。发现新的违规词及其替代词时，在你回复中以补充 `unslop` 的 abstract-metaphor 规则的形式提出，并附上 diff。不要直接修改那个 skill。
 
-## Vary the rhythm
+## 变换节奏
 
-The layers decide what a document says and how much each sentence carries. A doc can obey all of them and still read machine-written: every sentence clipped short, no view anywhere, nothing specific.
+层次决定文档说什么、每句话承载多少。一篇文档可以全部达标、读起来却仍像机器写的：每句都短促，通篇没有观点，没有任何具体的东西。
 
-- Mix sentence lengths on purpose. Short sentences land a point. Longer ones that take their time carry a fact with its condition or consequence.
-- One thought per sentence does not mean one length per sentence. Split the sentence that carries two thoughts. Keep the long sentence that carries one.
-- Have a view where the mode allows it. Explanation weighs trade-offs, so say what you make of them instead of listing pros and cons. Reference stays dry.
-- Be specific over sterile. Not "schema changes can cause issues" but "a column rename fails the build".
+- 有意混合句子长短。短句用来敲定一个要点。不慌不忙的长句带着事实及其条件或后果。
+- 每句一个想法不等于每句一种长度。拆开承载两个想法的句子。留下只承载一个想法的长句。
+- 在模式允许的地方亮出观点。Explanation 要权衡取舍，那就说出你怎么看，而不是罗列优缺点。Reference 保持干燥。
+- 具体胜于空洞。不要写 "schema changes can cause issues"，要写 "a column rename fails the build"。
 
-## Pick the mode first (Diátaxis)
+## 先选模式（Diátaxis）
 
-One document, one mode. Two questions pick it: does the content inform action (doing) or understanding (thinking), and does it serve learning or work?
+一篇文档，一种模式。两个问题定模式：内容是指导行动（做）还是促进理解（想），它服务于学习还是工作？
 
-- Action + learning: **tutorial**.
-- Action + work: **how-to**.
-- Understanding + work: **reference**.
-- Understanding + learning: **explanation**.
+- 行动 + 学习：**tutorial**。
+- 行动 + 工作：**how-to**。
+- 理解 + 工作：**reference**。
+- 理解 + 学习：**explanation**。
 
-Use the compass on a whole document or on one sentence.
+这套罗盘既可用于整篇文档，也可用于单个句子。
 
-**Tutorial: learning by doing.** You are the teacher. The learner's success is your job, not theirs. Open by saying what the learner will build, not what they will "learn". Every step produces a visible result, early and often. Tell them what they should see: the expected output, the prompt change, the log line. Cut explanation to one clause and a link. Teaching pauses break the lesson. Stay concrete. Write as "we", in commands: "First, do x. Now, do y."
+**Tutorial：在做中学。** 你是老师。学习者的成功是你的责任，不是他们的。开头就说学习者将构建出什么，而不是他们将"学到"什么。每一步都产出一个可见的结果，越早越好、越频繁越好。告诉他们应该看到什么：预期输出、prompt 的变化、那行日志。解释压缩到一个从句加一个链接。教学式的停顿会打断课程。保持具体。以"我们"的口吻、用命令来写："First, do x. Now, do y."
 
-**How-to: steps to a goal.** Solve a problem a person has, not an operation the machine can perform. Assume competence. Skip teaching. Action only: no digressions, no background, no completeness for its own sake. Link those instead. Allow forks and judgment: "If you want x, do y." Name the guide by the task: "How to calibrate the radar array", not "Radar array calibration".
+**How-to：通往目标的步骤。** 解决一个人遇到的问题，而不是机器能执行的某个操作。假定读者有能力。跳过教学。只有行动：不岔开话题、不补背景、不为完整而完整。这些内容用链接代替。允许分叉和判断："If you want x, do y." 按任务给指南命名："How to calibrate the radar array"，而不是 "Radar array calibration"。
 
-**Reference: facts for lookup.** Describe. Only describe. No instruction, no persuasion, no opinion. Be dry, complete, and sure. State facts, options, limits, and errors with no hedging. Mirror the structure of the thing described, so code and docs can be navigated together. Put material where readers expect it. Generate from code where possible, so it stays true.
+**Reference：供查阅的事实。** 描述。只描述。没有指令、没有劝说、没有观点。要干燥、完整、笃定。陈述事实、选项、限制和错误，不加任何含糊其辞。结构与所描述之物一一对应，让代码和文档可以对照导航。材料放在读者预期的地方。尽可能从代码生成，这样它才不会失真。
 
-**Explanation: understanding and why.** One bounded topic, readable away from the product. Each title should tolerate an implicit "About..." in front. Anchor on a real why question. Give context: design decisions, history, constraints, alternatives. Opinion is allowed here and nowhere else.
+**Explanation：理解与缘由。** 一个有边界的主题，脱离产品也能读。每个标题都应经得起在前面加一个隐含的 "About..."。锚定一个真实的 why 问题。给出背景：设计决策、历史、约束、备选方案。观点只允许出现在这里，别处都不行。
 
-Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding inside reference, no arguing inside a how-to. Split and link instead.
+不要混用模式：tutorial 里不放 reference 式的表格，reference 里不放 tutorial 式的手把手，how-to 里不争论。要拆开再用链接连起来。
 
-## Write sentences to the reader (Google developer style)
+## 面向读者写句子（Google 开发者文档风格）
 
-- Talk to the reader as "you", in the present tense. "Will" only for things that genuinely happen later.
-- Say who does what: "the compiler checks", not "is checked". Passive is fine only when the actor is unknown or beside the point.
-- Write instructions as commands: "Click Submit." State facts plainly. Never "should be done".
-- Put the condition before the instruction: "To delete the document, click Delete." The reader skips what does not apply.
-- Put the common case first. Exceptions after.
-- Sound like a knowledgeable friend. No buzzwords, no figurative language, no "please" in instructions, and never "simply", "easy", or "quickly" in a procedure. If it were simple, the reader would not be here.
-- Don't pre-announce ("we will soon support...") and don't start consecutive sentences with the same phrase.
-- Link with words that say where the link goes: the page title or a short description. Never "click here". Prefer a sentence of context on the page over a link off it.
-- Headings carry the point, not just the topic ("Pick the mode first", not "Modes"). Sentence case. A task heading is a bare verb phrase ("Create an instance"). A concept heading is a noun phrase. One h1 per page, no skipped levels.
-- Numbered lists for sequences, bullets for everything else. Introduce a list with a complete sentence. Keep items parallel.
-- Code goes in code font. UI elements go in bold. Use serial commas. Drop "etc." and say up front that a list is partial.
+- 以 "you" 称呼读者，用现在时。"Will" 只用于确实发生在将来的事。
+- 说清谁做什么："the compiler checks"，而不是 "is checked"。只有施动者未知或无关紧要时才用被动。
+- 把指令写成命令："Click Submit." 平实地陈述事实。绝不用 "should be done"。
+- 条件放在指令前面："To delete the document, click Delete." 读者会跳过不适用的部分。
+- 常见情况在前。例外在后。
+- 听起来像一位懂行的朋友。不要流行语、不要比喻修辞、指令里不要 "please"，操作步骤里绝不用 "simply"、"easy" 或 "quickly"。如果真简单，读者就不会来了。
+- 不要预先宣布（"we will soon support..."），也不要让连续的句子以同一个短语开头。
+- 链接文字要说明链接去向：页面标题或简短描述。绝不用 "click here"。宁可页面上多一句背景说明，也好过把读者链去别处。
+- 标题要承载论点，而不只是话题（"Pick the mode first"，而不是 "Modes"）。用 sentence case。任务标题是光杆动词短语（"Create an instance"）。概念标题是名词短语。每页一个 h1，不跳级。
+- 有先后顺序用编号列表，其余用无序列表。用完整的句子引入列表。各项保持平行结构。
+- 代码用代码字体。UI 元素加粗。使用串行逗号。去掉 "etc."，并在开头就说明列表并不完整。
 
-## Make statements load one at a time (STE rules)
+## 让句子一次只承载一条信息（STE 规则）
 
-- One instruction per sentence. One thought per sentence everywhere else.
-- Split instructions longer than about 20 words and other sentences longer than about 25.
-- Put the warning or condition before the step it guards: "If hot oil touches your skin, injuries can occur."
-- Keep "the" and "a": "Remove backup file" reads two ways. "Remove the backup file" reads one.
-- Give each word one meaning and one job, then keep it. If "check" means inspect, don't also use it for restrain.
-- Pick one word per action and stick to it: "start", not "start" here and "initiate" there.
-- Write procedures as direct commands, never as narration and never in the passive: "Install the component", not "the component must be installed".
-- Avoid "-ing" words where you can. They take too many grammatical jobs and breed misreadings.
+- 每句一条指令。其他句子每句一个想法。
+- 超过约 20 个词的指令、超过约 25 个词的其他句子，都要拆分。
+- 警告或条件放在它所保护的那一步之前："If hot oil touches your skin, injuries can occur."
+- 保留 "the" 和 "a"："Remove backup file" 能读出两种意思，"Remove the backup file" 只有一种。
+- 每个词只给一个含义、一个职责，然后守住它。如果 "check" 表示检查，就不要再用它表示约束。
+- 每个动作选一个词并贯彻到底："start"，不要这里 "start"、那里 "initiate"。
+- 操作步骤写成直接命令，绝不写成叙述，也绝不用被动语态："Install the component"，而不是 "the component must be installed"。
+- 能不用 "-ing" 词就不用。它们承担的语法角色太多，容易滋生误读。
 
-## Leave no sentence open to two readings (Global English)
+## 不让任何句子存在两种读法（Global English）
 
-- Keep words like "only" and "not" next to the word they change: "only fails on growth" and "fails only on growth" say different things.
-- Break up long noun strings: "the proto import budget check script" becomes "the script that checks the proto-import budget".
-- Make every "it", "they", and "this" point at one obvious thing. Repeat the noun when in doubt. Never use "this" or "which" to point at a whole clause.
-- Don't drop verbs: "Phase 1 moves the converters and Phase 2 the runtime" leaves Phase 2 without one. Give it one.
-- Keep the small words that show structure. "Ensure that the switch is off" keeps "that" because it makes the sentence parse one way. Never trade clarity for word count.
-- Repeat the article in a series when it prevents a misread: "the client and the host", not "the client and host", when they are two things.
-- Say which parts "and" or "or" joins when a sentence can group two ways. "Both...and", "either...or", and "if...then" are free disambiguators.
-- Use periods, not semicolons. Replace an em dash with a new sentence.
-- Make text in parentheses a full grammatical unit or its own sentence. Never form plurals with "(s)".
-- No slashes: write "a, b, or both" instead of "a/b" or "and/or".
-- Call each thing by one name, everywhere. A doc that says "the gate", "the ratchet", and "the budget check" for one thing teaches three things. Rewording an unchanged sentence between edits costs the same way. Don't churn what didn't change.
-- Skip idioms, colloquialisms, Latin abbreviations, and metaphors. A non-native reader, a translator, and an agent all parse plain constructions best.
+- "only"、"not" 这类词要紧挨着它们修饰的词："only fails on growth" 和 "fails only on growth" 说的是两回事。
+- 拆开长名词串："the proto import budget check script" 应变成 "the script that checks the proto-import budget"。
+- 让每个 "it"、"they"、"this" 都只指向一个明确的东西。拿不准就重复名词。绝不用 "this" 或 "which" 指代整个从句。
+- 不要省略动词："Phase 1 moves the converters and Phase 2 the runtime" 让 Phase 2 没了动词。给它补上。
+- 保留体现结构的小词。"Ensure that the switch is off" 保留 "that"，因为它让句子只有一种解析方式。绝不用字数换清晰度。
+- 当重复冠词能防止误读时，就在并列中重复它：两者是不同东西时写 "the client and the host"，而不是 "the client and host"。
+- 当句子可能有两种组合方式时，说明 "and" 或 "or" 连接的是哪些部分。"Both...and"、"either...or" 和 "if...then" 是免费的消歧手段。
+- 用句号，不用分号。把破折号换成一个新句子。
+- 括号里的内容要么是完整的语法单位，要么独立成句。绝不要用 "(s)" 构成复数。
+- 不用斜杠：写 "a, b, or both"，而不是 "a/b" 或 "and/or"。
+- 每样东西在任何地方都用同一个名字。一个文档把同一个东西一会儿叫 "the gate"、一会儿叫 "the ratchet"、一会儿叫 "the budget check"，就是在教读者三样东西。多次编辑之间改动一句没有变化的句子的措辞，代价同理。没变的东西不要折腾。
+- 避开习语、口语、拉丁语缩写和比喻。非母语读者、翻译者和 agent 解析平实句式的能力都最好。
 
-## Voice and repo specifics
+## 语气与仓库细则
 
-- Apply the **unslop** skill to every doc this skill touches. That skill owns the slop-pattern catalog: AI vocabulary, filler, hedging, formatting tells.
-- PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR body is a briefing that a reviewer can read in under a minute. Do not paste swarm logs, SHA lists, or metric tables. Link them.
-- Product UI strings are not documentation. Use your product's copy guidelines for those.
-- Indent code snippets with tabs. Write real paths and real symbols. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
+- 本 skill 触及的每篇文档都应用 **unslop** skill。AI 垃圾文风（AI slop）的模式目录归那个 skill 管：AI 词汇、填充词、对冲式措辞、格式化痕迹。
+- PR 描述和提交信息也是写作。除 Diátaxis 之外的每个层次都适用于它们。PR 正文是一份审查者一分钟能读完的简报。不要粘贴 swarm 日志、SHA 列表或指标表格。用链接。
+- 产品 UI 文案不是文档。那类内容遵循你产品的文案指南。
+- 代码片段用 tab 缩进。写真实的路径和真实的符号。让每个计数或目录树声明在落地它的那个 commit 上都成立，并附上能重新生成它的命令。
 
-## Worked example
+## 实战示例
 
-Before:
+改写前：
 
 > Configuration of the proto import ratchet budget script parameters is performed via budget.json. Note that it's important to remember that running with --write, which updates the committed budget to reflect the current count, should only be done when lowering it. If exceeded, CI fails.
 
-After:
+改写后：
 
 > `budget.mjs` reads the committed budget from `budget.json` and counts the files that import protos. If the count exceeds the budget, CI fails. Run `budget.mjs --write` only to lower the budget.

@@ -1,72 +1,72 @@
 ---
 name: how
-description: "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation."
+description: "用于 \"how does X work\"、改动某处之前的代码走读，以及位置 / 归属 / 分层问题（\"where should this live\"、\"which package owns this\"、\"is this the right layer\"）。解释子系统架构、运行时流程与新手上手所需的心智模型。探究动机请用 why。"
 ---
 
 # How
 
-On Codex, read the [platform mapping](../poteto-mode/references/codex-tools.md), including its per-skill notes, before following this skill.
+在 Codex 上，遵循本 skill 之前，先阅读[平台映射](../poteto-mode/references/codex-tools.md)，包括其中针对各 skill 的注意事项。
 
-On GitHub Copilot, read the [platform mapping](../poteto-mode/references/copilot-tools.md), including its per-skill notes, before following this skill.
+在 GitHub Copilot 上，遵循本 skill 之前，先阅读[平台映射](../poteto-mode/references/copilot-tools.md)，包括其中针对各 skill 的注意事项。
 
-Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
+探索代码库来回答 "how does X work?" 这类问题。产出高级工程师初接手一个子系统时所需的架构级解释：足以建立起可用的心智模型，又不至于读起来像逐行注释的源码。
 
-Each spawn below names a role line in `pstack-models.md` and a default in [Models](#models). Set `model` to that line's value, or to the default if the sheet or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the `Agent` tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message.
+下文的每次 spawn 都会指明 `pstack-models.md` 中的一行角色配置，以及[模型](#models)一节中的默认值。将 `model` 设为该行的值；若配置表或该行缺失，则用默认值。当值为 `auto` 或 `inherit-parent` 时，保持 `model` 不设置。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明这一点。如果它连默认值也拒绝，就根据其错误信息改用同一家族中最接近的有效 slug。
 
-## Step 1. Assess Complexity
+## 步骤 1. 评估复杂度
 
-If the scope is ambiguous, state your interpretation and explore. The user can redirect.
+如果范围不明确，先说明你的理解再开始探索。用户可以随时纠正。
 
-- **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. One explainer explores and explains in a single pass. Go to Step 2b.
-- **Complex** (a subsystem spanning multiple files or services, a cross-cutting feature, a full architectural overview): spawn parallel explorers first, then hand off to the explainer. Go to Step 2a.
+- **简单**（单个模块、一个小工具，或 "how does function X work" 这类窄问题）：不派 explorer。由一个 explainer 一轮完成探索和讲解。转到步骤 2b。
+- **复杂**（横跨多个文件或服务的子系统、贯穿性的功能、完整的架构概览）：先并行 spawn 多个 explorer，再交给 explainer。转到步骤 2a。
 
-When in doubt, take the simple path.
+拿不准时，走简单路径。
 
-## Step 2a. Explore (complex questions only)
+## 步骤 2a. 探索（仅限复杂问题）
 
-Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single message:
-
-- `subagent_type`: `general-purpose`
-- `model`: the `how explorer` line, default in [Models](#models)
-- `readonly`: `true`
-
-Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
-
-## Step 2b. Direct Explain (simple questions)
-
-Spawn one `Agent` subagent that explores and explains in one pass:
+把问题拆解成 2 到 4 个探索角度，每个角度对应子系统的一个独立切面。在单条消息里 spawn 全部 explorer：
 
 - `subagent_type`: `general-purpose`
-- `model`: the `how explainer` line, default in [Models](#models)
+- `model`: `how explorer` 那一行，默认值见[模型](#models)
 - `readonly`: `true`
 
-Build its prompt from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 4.
+每个 explorer 都使用 `references/explorer-prompt.md` 中的 prompt，并填入它的探索角度。然后转到步骤 3。
 
-## Step 3. Synthesize (complex questions only)
+## 步骤 2b. 直接讲解（简单问题）
 
-Once all explorers have returned, spawn one `Agent` subagent to synthesize their findings into one explanation:
+spawn 一个 `Agent` subagent，一轮完成探索和讲解：
 
 - `subagent_type`: `general-purpose`
-- `model`: the `how explainer` line, default in [Models](#models)
+- `model`: `how explainer` 那一行，默认值见[模型](#models)
 - `readonly`: `true`
 
-Build its prompt from `references/explainer-prompt.md` with every explorer's findings filled in.
+基于 `references/explainer-prompt.md` 构建 prompt，但去掉 explorer 发现部分。转到步骤 4。
 
-## Step 4. Present
+## 步骤 3. 综合（仅限复杂问题）
 
-Present the explainer's output to the user. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
+等所有 explorer 返回后，spawn 一个 `Agent` subagent，把它们的发现综合成一份解释：
 
-## Output Format
+- `subagent_type`: `general-purpose`
+- `model`: `how explainer` 那一行，默认值见[模型](#models)
+- `readonly`: `true`
 
-The explanation uses the sections defined in `references/explainer-prompt.md`, dropping any that do not apply: Overview, Key Concepts, How It Works, Where Things Live, Gotchas.
+基于 `references/explainer-prompt.md` 构建 prompt，填入每个 explorer 的发现。
 
-## Models
+## 步骤 4. 呈现
 
-Role defaults, stamped from `plugins/pstack/models.json` (edit there, rerun `tools/generate.mjs`). A matching role line in the `pstack-models.md` override sheet overrides each at runtime; `/setup-pstack` writes it and lists its path per runtime.
+把 explainer 的输出呈现给用户。为清晰或贴合对话语境做轻度编辑没问题，但不要大改重写。
+
+## 输出格式
+
+解释使用 `references/explainer-prompt.md` 中定义的小节，不适用的小节直接省略：概览、关键概念、工作原理、代码位置、陷阱。
+
+## 模型
+
+各角色的默认值，取自 `plugins/pstack/models.json`（要改就在那里改，然后重跑 `tools/generate.mjs`）。运行时，`pstack-models.md` 覆盖表中匹配的角色行会覆盖这里的每一项；`/setup-pstack` 会写入该覆盖表，并按运行时列出其路径。
 
 - how explorer: `opus`
 - how explainer: `opus`
 
-## Reasoning effort
+## 推理力度
 
-A role value in the override sheet may name a reasoning effort after its model, as in `opus @xhigh`. Levels on Claude Code: `low`, `medium`, `high`, `xhigh`, `max`. Which ones apply depends on the model. A value without `@` takes the sheet's `default effort` line, a level or `session`, and `session` when the sheet has no such line. `session` sets no effort, so the dispatch is the usual one. Strip the suffix before reading the model: `inherit-parent` or `auto` still omits `model` at every level, and a model name is passed as `model`. On Claude Code, a level picks the effort agent from the `subagent_type` you would otherwise use. `pstack:poteto-agent` becomes `subagent_type: "pstack:poteto-agent-<level>"`. `general-purpose`, or no `subagent_type`, becomes `subagent_type: "pstack:effort-<level>"`. The effort agents set only `effort`, so the model you pass still decides the model. On Codex, pass the level as `spawn_agent`'s `reasoning_effort` and keep the usual instructions.
+覆盖表中的角色值可以在模型后面附一个推理力度，如 `opus @xhigh`。Claude Code 上的级别：`low`、`medium`、`high`、`xhigh`、`max`。哪些级别可用取决于模型。不带 `@` 的值取覆盖表的 `default effort` 行（一个级别或 `session`）；若表中没有该行，则取 `session`。`session` 不设置任何力度，因此派发方式与平常相同。读取模型前先剥掉后缀：无论处于哪个级别，`inherit-parent` 或 `auto` 仍然省略 `model`，而模型名照常作为 `model` 传入。在 Claude Code 上，一个级别会把你本要使用的 `subagent_type` 换成对应的 effort agent：`pstack:poteto-agent` 变成 `subagent_type: "pstack:poteto-agent-<level>"`；`general-purpose` 或不设 `subagent_type` 则变成 `subagent_type: "pstack:effort-<level>"`。这些 effort agent 只设置 `effort`，所以你传入的模型仍然决定最终模型。在 Codex 上，把级别作为 `spawn_agent` 的 `reasoning_effort` 传入，其余指令保持不变。

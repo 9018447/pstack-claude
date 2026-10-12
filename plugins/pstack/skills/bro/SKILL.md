@@ -1,6 +1,6 @@
 ---
 name: bro
-description: Restate the last message in plain human language, with no jargon. Use for /bro or when asked to say it plainly.
+description: 用平实的人话复述上一条消息，不带行话。用于 /bro 或被要求说人话的时候。
 ---
 
-Restate your last message. Stop using jargon and speak coherently. State it more simply and concisely, like one human talking to another.
+复述你的上一条消息。别再用行话，把话说连贯。说得更简单、更简洁，就像一个人对另一个人说话那样。

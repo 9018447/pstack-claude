@@ -1,26 +1,26 @@
 ---
 name: principle-model-the-domain
-description: "Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals."
+description: "写有状态逻辑时，或代码分支很多、或跨文件重复同一形状假设时应用。把领域编码进一个结构，而不是散落的条件判断。"
 user-invocable: false
 ---
 
-# Model the Domain
+# 建模领域（Model the Domain）
 
-Encode the real domain in a data structure instead of scattering it across conditionals.
+把真实的领域编码进一个数据结构，而不是散落在各处条件判断里。
 
-**Why:** Scattered booleans, repeated shape assumptions, and branching spread across files are accidental complexity. A structure that matches the domain makes invalid states unrepresentable and deletes branches. Choosing it at write time is cheap. Recovering it later reads as a refactor and gets deferred.
+**为什么：**散落的布尔值、重复的形状假设、摊到多个文件里的分支，都是偶然复杂度。与领域匹配的结构能让非法状态无法表示，并删掉分支。写代码时选定它很便宜；事后补救看起来像一次重构，于是总被推迟。
 
-**Reach for structures like these:**
+**考虑这样的结构：**
 
-- A state machine instead of scattered booleans, phases, or lifecycle checks.
-- A typed object/model instead of loose parameters or repeated shape assumptions.
-- A map, registry, lookup table, or discriminated union instead of branching spread across files.
-- A reducer or command/event model instead of ad hoc state mutations.
-- A module organized around one body of domain knowledge instead of a sequence such as load, validate, transform, and save. Execution order is not ownership.
-- A small module boundary that gathers repeated behavior, ownership, or invariants.
-- A queue, cache, index, graph/tree, or normalized collection where the data access pattern calls for it.
-- Any other structure that fits. When none fits, work out what the code must never allow and how the data gets read, then find the structure that encodes exactly that.
+- 用状态机代替散落的布尔值、阶段标记或生命周期检查。
+- 用带类型的对象/模型代替松散参数或重复的形状假设。
+- 用 map、registry、查找表或可辨识联合代替摊到多个文件的分支。
+- 用 reducer 或命令/事件模型代替临时起意的状态变更。
+- 用围绕某一整块领域知识组织的模块，代替 load、validate、transform、save 这类序列。执行顺序不等于所有权。
+- 用一个小的模块边界收拢重复的行为、所有权或不变量。
+- 当数据访问模式需要时，用队列、缓存、索引、图/树或规范化集合。
+- 任何其他合适的结构。都不合适时，先想清楚代码绝不允许什么、数据如何被读取，再找到恰好编码了这些的结构。
 
-Do not force an abstraction. Prefer boring code if the current shape is already clear, local, and unlikely to grow. Be skeptical of an abstraction that adds indirection without removing branches, duplicated rules, invalid states, or lifecycle risk.
+不要强行抽象。如果当前形状已经清晰、局部化、且不太可能增长，就偏爱无聊的代码。对只增加间接却不减少分支、重复规则、非法状态或生命周期风险的抽象保持怀疑。
 
-The sign that you skipped this is a new feature that grows an existing if/else chain by one more branch, or a second boolean that must stay in sync with the first. Temporal decomposition is another sign. Phase-named modules repeat the same domain rules across steps.
+你跳过了这一步的征兆是：一个新功能让既有的 if/else 链多长出一个分支，或者出现第二个必须与第一个保持同步的布尔值。按时间分解是另一个征兆——以阶段命名的模块把同样的领域规则在各步骤间重复。

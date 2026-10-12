@@ -1,20 +1,20 @@
 ---
 name: principle-never-block-on-the-human
-description: "Apply when tempted to ask 'should I do X?' on reversible work. Proceed, present the result, let the human course-correct after the fact; reserve confirmation for irreversible actions."
+description: "想在可逆的工作上问“我该不该做 X？”时应用。先做，展示结果，让人类事后纠偏；把确认留给不可逆的操作。"
 user-invocable: false
 ---
 
-# Never Block on the Human
+# 绝不因人阻塞（Never Block on the Human）
 
-The human supervises asynchronously. Agents must stay unblocked. Make reasonable decisions, proceed, and let the human course-correct after the fact.
+人类是异步监督的。agent 必须保持不被阻塞。做出合理决策，继续推进，让人类事后纠偏。
 
-**Why:** Every permission pause stalls the pipeline and makes the human the bottleneck. Since code changes are reversible and reviewable, a wrong decision usually costs less than blocking.
+**为什么：**每一次等待许可的暂停都让流水线停摆，把人类变成瓶颈。既然代码改动可逆且可评审，一个错误决定通常比阻塞便宜。
 
-**Pattern:**
-- **Proceed, then present.** Do the work, show the result. Don't ask "should I do X?" Do X, explain why.
-- **Make the system self-healing.** When you notice a problem, log it and fix it in the next round.
+**模式：**
+- **先做，再展示。**把活干了，展示结果。不要问"我该不该做 X？"——去做 X，并解释为什么。
+- **让系统自愈。**发现问题就记录下来，下一轮修掉。
 
-**Boundaries:**
-- **Irreversible actions** (force-push, delete production data, send external messages) still require confirmation.
-- **Reversible actions** (write code, edit notes, split tasks) should proceed without blocking.
-- **Product direction** comes from the human. *Execution* should not block.
+**边界：**
+- **不可逆操作**（force-push、删除生产数据、对外发送消息）仍需确认。
+- **可逆操作**（写代码、改笔记、拆任务）应直接推进、不予阻塞。
+- **产品方向**由人类决定。*执行*不应阻塞。

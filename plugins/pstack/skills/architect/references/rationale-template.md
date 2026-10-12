@@ -1,39 +1,39 @@
-# Rationale template
+# 设计依据模板
 
-The prose that ships alongside the type sketch. One page. Sentence-case headings, no boilerplate. Replace the italic notes with actual content.
+随类型草图一起交付的散文。一页以内。标题采用句子式大小写，不要套话。把斜体提示替换为实际内容。
 
-## Problem
+## 问题
 
-*One paragraph. What we're trying to do, and what about the existing system or constraints makes the shape non-obvious. If [Phase A](../SKILL.md#phase-a-ground-the-problem) surfaced constraints the design must honor (existing types to interop with, callers we can't break, invariants that crossed our boundary), name them here so the reader sees the same constraints you saw.*
+*一段话。我们要做什么，以及现有系统或约束中的什么使这个形态并非显而易见。如果 [Phase A](../SKILL.md#phase-a-ground-the-problem) 浮现出设计必须遵守的约束（要互操作的现有类型、不能破坏的调用方、越过我们边界的不变式），在这里点名它们，让读者看到与你相同的约束。*
 
-## Usage (caller's view)
+## 用法（调用方视角）
 
-*Write this first, before the type sketch. Show the README or quickstart the consumer reads, plus two or three realistic call sites in their own code. What they import, what they call, what comes back. The type sketch in [Shape](#shape) is derived from this. The two must agree. When they diverge, reconcile the sketch to the usage, not the reverse. The caller's experience is the spec. The types serve it.*
+*先写这一节，再写类型草图。展示使用者会读的 README 或快速上手，外加两三个其代码中的真实调用点：导入什么、调用什么、返回什么。[形态](#shape)中的类型草图由这一节推导而来。两者必须一致。不一致时，让草图迁就用法，而不是反过来。调用方的体验就是规格。类型为它服务。*
 
-## Shape
+## 形态
 
-*The recommended architecture. Data structures first. Then how data flows through the signatures. Name the load-bearing decisions. State which invariants are encoded in types, where validation lives, and what the system deliberately does not do. Judge interface depth explicitly. State what complexity the public surface hides, what remains exposed to callers, and why the interface is no larger than needed. Cite the principle behind each decision (e.g., `per boundary-discipline`). Don't restate it.*
+*推荐的架构。先写数据结构。再写数据如何流经各个签名。点名承重的决定。说明哪些不变式编码在类型里、校验放在哪里、系统刻意不做什么。明确评判接口深度。说明公共表面隐藏了什么复杂性、还有什么暴露给调用方，以及接口为何不比需要的大。为每个决定引用其背后的原则（如 `per boundary-discipline`）。不要复述原则内容。*
 
-## Synthesis decision
+## 综合决定
 
-*Filled in by [arena](../../arena/SKILL.md). Records which candidate became the base and why, what was adapted from each of the others, and what was rejected and why.*
+*由 [arena](../../arena/SKILL.md) 填写。记录哪个候选成为基底及原因、从其他各候选各自借鉴了什么、否决了什么及原因。*
 
-## Tradeoffs accepted
+## 接受的权衡
 
-*One bullet per tradeoff the chosen shape makes. Form: "we accept X in exchange for Y." Name anything a future reader might mistake for an oversight, including things that look like premature optimization or premature simplification.*
+*所选形态做出的每个权衡一条要点。格式："我们接受 X，以换取 Y。"凡是未来读者可能误以为疏漏的东西都要点名，包括那些看起来像过早优化或过早简化的东西。*
 
-## Alternatives considered
+## 考虑过的备选方案
 
-*Required. Name at least one concrete alternative shape, with one line on why it lost. Judge each alternative on interface depth, not implementation simplicity alone. Name the complexity it exposes to callers and the complexity it hides. Two or three alternatives belong here when the design space had real contenders. One is fine when the constraints forced the answer, with the conclusion phrased as "this was the only viable shape because..." Avoid listing flavors of the same shape. This section covers design alternatives the chosen shape considered and rejected, not other runner candidates.*
+*必填。至少点名一个具体的备选形态，并用一行说明它为何落选。评判每个备选看接口深度，而不是只看实现是否简单。点出它暴露给调用方的复杂性和它隐藏的复杂性。当设计空间里有真正的竞争者时，这里应有两三个备选。当约束逼出了唯一答案时，一个就够，结论表述为"这是唯一可行的形态，因为……"。避免罗列同一形态的各种变体。本节覆盖所选形态考虑过并否决的设计备选，而不是其他 runner 候选。*
 
-## Implementation reconciliation
+## 实现协调
 
-*During implementation, record accepted deviations and their acceptance sources here, and update the affected usage, outcome contracts, signatures, and ownership in this design. Record why local deviations leave the shared contract valid. Keep unaccepted changes unresolved. Reconcile before closing a unit or handing its contract to the next worker.*
+*实现期间，在这里记录已接受的偏离及其接受来源，并更新本设计中受影响的用法、结果契约、签名和归属。记录局部偏离为何不破坏共享契约的有效性。未接受的变更保持未决状态。在关闭一个单元或把它的契约交给下一个 worker 之前完成协调。*
 
-## Open questions and risks
+## 开放问题与风险
 
-*Things you noticed during the sketch that the human needs to weigh in on, and risks worth flagging before implementation starts. Phrase as questions, not assertions, so the human's answer is the resolution rather than a comment.*
+*画草图时注意到的、需要人来表态的事项，以及实现开始前值得标记的风险。用问句表述，不要用断言，这样人的回答本身就是结论，而不是一条评论。*
 
-## Next implementation step
+## 下一步实现
 
-*The first thing to build against the sketch. One sentence. What you'd start writing immediately after synthesis (or after Phase D sign-off, if a checkpoint was opted into).*
+*对照草图要构建的第一件事。一句话。综合完成（或如果加入了检查点，则在 Phase D 签字确认）之后你会立刻动笔写的东西。*

@@ -1,31 +1,31 @@
 ---
 name: principle-type-system-discipline
-description: "Apply when designing types, reviewing a function signature, or writing code in any statically-typed language. Make illegal states unrepresentable, brand semantic primitives, parse external data at boundaries, refuse to lie to the compiler, exhaust variants, derive from authoritative schemas."
+description: "设计类型、评审函数签名，或用任何静态类型语言写代码时应用。让非法状态无法表示、给语义原语加品牌、在边界解析外部数据、拒绝欺骗编译器、穷尽所有变体、从权威 schema 派生。"
 user-invocable: false
 ---
 
-# Type System Discipline
+# 类型系统纪律（Type System Discipline）
 
-The type checker is a proof assistant. Use it to eliminate impossible states, mismatched primitives, and unhandled variants at compile time. A case the types let you ignore becomes a runtime failure the compiler could have stopped. Prefer defining errors and special cases out of existence over proliferating handlers. Unrepresentable states, total functions, and interface redesign (the patterns below) are the tools.
+类型检查器是一个证明助手。用它消除不可能的状态、错配的原语和未处理的变体，让这些都止于编译期。类型允许你忽略的分支，会变成编译器本可拦下的运行时失败。优先让错误和特殊情况在定义层面就不存在，而不是增殖处理器。不可表示的状态、全函数和接口重设计（即下面的模式）就是工具。
 
-Applies to any typed language. Skills like `typescript-best-practices` ground it in specific syntax.
+适用于任何带类型的语言。`typescript-best-practices` 这类 skill 把它落到具体语法上。
 
-**The patterns:**
+**模式：**
 
-- **Make illegal states unrepresentable.** Model variants as sum types: discriminated unions in TypeScript, enums with payloads in Rust/Swift/Kotlin, sealed classes in Scala, ADTs in Haskell/OCaml. Don't model state as a bag of optional fields where contradictory combinations compile. A subtle anti-pattern: `{ completed: boolean; completedAt?: Date }` admits `completed: true; completedAt: undefined`, which is meaningless. Derive the boolean from a single source like `completedAt !== null`, or model the variants explicitly as `{ kind: 'open' } | { kind: 'done'; at: Date }`. If a bug forces the question "wait, can this combination actually happen?", the type is too loose.
-- **Types are constructions, not restrictions.** Build the type up from the values you want instead of carving them out of a looser type with checks. The invariant that seems to need a refinement type is usually a construction away. A non-empty list is a head plus a rest, not a list with a length check. A valid time range is a start plus a duration, not two timestamps you must keep ordered. No representation is privileged. A list of pairs is an even-length list if you interpret it that way, so choose the shape that cannot build the illegal value and expose the interface callers need on top.
-- **Brand semantic primitives.** `UserId` and `OrderId` are strings underneath but should not be interchangeable. Newtypes in Rust, opaque types in Swift, value classes in Kotlin, phantom types in Haskell, branded intersections in TypeScript. Validate once at creation, trust the type downstream.
-- **External data is untyped until parsed.** RPC payloads, JSON, IPC messages, CLI args, config files, environment variables, database rows. Have a parse function at every boundary that turns unstructured input into the typed model. See the **boundary-discipline** principle skill for where to put validation.
-- **Don't lie to the type system.** Casts, unsafe coercions, and assertion functions that bypass the compiler are latent runtime crashes. If the compiler can't prove a fact, prove it (validate, narrow, refine the model) or accept that the cast is a hazard.
-- **Exhaustive matching is the compiler's job.** When you match on a sum type, the compiler must fail compilation if a new variant is added without handling. Use the idiom your language provides: `never`-typed binding in TypeScript, unannotated `match` in Rust, `-Wincomplete-patterns` in Haskell, sealed-class match exhaustiveness in Kotlin.
-- **Derive types from authoritative schemas.** When a protocol buffer, OpenAPI spec, GraphQL schema, database migration, or design-system token file defines a shape, derive from it instead of hand-rolling a parallel type. See the **encode-lessons-in-structure** principle skill.
-- **Strengthen a type only where partiality appears.** A runtime assertion, null check, or "this should never happen" throw marks the place a type is too weak. Push that check up into the type. Then stop. The type system's job is to track the cases each use site must handle, not to describe the data as precisely as possible. Prefer total functions. `sum` of an empty list is 0, so it takes the plain list. `head` of an empty list has no answer, so it demands the non-empty one.
+- **让非法状态无法表示。**把变体建模成和类型（sum type）：TypeScript 的可辨识联合，Rust/Swift/Kotlin 的带载荷枚举，Scala 的密封类，Haskell/OCaml 的 ADT。不要把状态建模成一堆可选字段的袋子，让矛盾组合也能通过编译。一个隐蔽的反模式：`{ completed: boolean; completedAt?: Date }` 允许 `completed: true; completedAt: undefined` 这种无意义的组合。从单一来源（如 `completedAt !== null`）派生这个布尔值，或把变体显式建模为 `{ kind: 'open' } | { kind: 'done'; at: Date }`。如果一个 bug 逼你问出"等等，这种组合真的可能出现吗？"，那这个类型就太松了。
+- **类型是构造，不是限制。**从你想要的值出发把类型构造出来，而不是从更松的类型里靠检查一点点抠。看起来需要精化类型（refinement type）的不变量，通常一个构造就够。非空列表是"头加余部"，不是"列表加长度检查"。有效时间段是"起点加时长"，不是"两个你必须维持有序的时间戳"。没有哪种表示是特权的：成对列表按这种方式解释就是偶数长度列表，所以要选择无法构造出非法值的形状，并在其上暴露调用方需要的接口。
+- **给语义原语加品牌。**`UserId` 和 `OrderId` 底层都是字符串，但不应该可以互换。Rust 的 newtype、Swift 的不透明类型、Kotlin 的值类、Haskell 的幻影类型、TypeScript 的品牌化交叉类型。创建时校验一次，下游信任类型。
+- **外部数据在解析前是无类型的。**RPC 载荷、JSON、IPC 消息、CLI 参数、配置文件、环境变量、数据库行。在每个边界放一个解析函数，把非结构化输入变成带类型的模型。校验放哪里，见 **boundary-discipline** 原则 skill。
+- **不要欺骗类型系统。**绕过编译器的强转、不安全类型转换和断言函数都是潜伏的运行时崩溃。如果编译器无法证明一个事实，就亲自证明它（校验、收窄、改进模型），或者承认这个强转是一个隐患。
+- **穷尽匹配是编译器的职责。**对和类型做 match 时，若新增变体而没有处理，编译器必须编译失败。使用你的语言提供的惯用法：TypeScript 中 `never` 类型的绑定、Rust 中不加注解的 `match`、Haskell 的 `-Wincomplete-patterns`、Kotlin 密封类的穷尽 match 检查。
+- **从权威 schema 派生类型。**当 protocol buffer、OpenAPI 规范、GraphQL schema、数据库迁移或设计系统 token 文件定义了一个形状，从它派生，不要手工再写一个平行类型。见 **encode-lessons-in-structure** 原则 skill。
+- **只在出现偏函数性（partiality）的地方加强类型。**运行时断言、null 检查或"这里绝不应该发生"的 throw，都标记着类型太弱的地方。把那个检查上推进类型，然后停手。类型系统的职责是追踪每个使用点必须处理的情形，而不是把数据描述得尽可能精确。优先全函数（total function）：空列表的 `sum` 是 0，所以它接受普通列表；空列表的 `head` 没有答案，所以它要求非空列表。
 
-**The tests:**
+**检验标准：**
 
-- "Can I write a comment explaining when this combination of fields is valid?" If yes, the type is too loose. Split it into a sum type.
-- "Do two of my function arguments share a primitive type but mean different things?" Brand them.
-- "Where did this `any`, this `as`, this `assertNotNull` come from?" Trace it to the boundary and validate there instead.
-- "If a new variant is added next month, will the compiler tell the next agent where to add a case?" If no, the match isn't exhaustive.
-- "Is this type duplicating a shape another file owns?" Derive instead.
-- "Am I strengthening this type to keep an operation total, or just to be more precise?" If nothing would otherwise panic, keep the plain type.
+- "我能否写出一条注释，解释这组字段组合何时有效？"如果能，类型就太松了。把它拆成和类型。
+- "我的两个函数参数是否共用一个原语类型却含义不同？"给它们加品牌。
+- "这个 `any`、这个 `as`、这个 `assertNotNull` 是从哪来的？"追溯到边界，改在边界校验。
+- "下个月新增一个变体时，编译器会不会告诉下一个 agent 该在哪里补一个分支？"如果不会，match 就不是穷尽的。
+- "这个类型是否在重复另一个文件拥有的形状？"改成派生。
+- "我加强这个类型是为了让某个操作成为全函数，还是只是为了更精确？"如果否则没有任何东西会 panic，就保留普通类型。

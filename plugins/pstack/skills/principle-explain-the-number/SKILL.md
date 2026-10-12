@@ -1,23 +1,23 @@
 ---
 name: principle-explain-the-number
-description: "Apply before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, and rule out that it measured something other than the work you think."
+description: "在信任、报告或依据你测得的一个数字（加速比、性能回退、吞吐量、延迟或 eval 结果）行动之前应用。找出限制它的因素，并排除它测的其实不是你以为的那件事。"
 user-invocable: false
 ---
 
-# Explain the Number
+# 解释这个数字（Explain the Number）
 
-A measured number is a claim about a system. Before you trust it, report it, or act on it, find what limits it and rule out that it measured something else.
+测得的数字是对系统的一个断言。在信任、报告或依据它行动之前，先找出限制它的因素，并排除它测的是别的东西。
 
-**Why:** A run that went wrong still prints a plausible number. Requests that failed, a cache that skipped the work, code that never ran, a side left on default settings, and run-to-run noise all produce results that look fine. If you cannot say why the number is not twice as good, you do not know what you measured.
+**为什么：**跑砸了的一次运行照样会打印一个看起来合理的数字。失败的请求、跳过了工作的缓存、从未执行的代码、停留在默认配置的一侧、以及运行间的噪声，都会产出看似正常的结果。如果你说不出为什么这个数字没有好上两倍，你就不知道自己测的是什么。
 
-**Pattern:**
+**模式：**
 
-- **Ask "why not double?"** Name the resource or code path that bounds the result, such as a core, a lock, the disk, the network, or the load generator itself. Get it from a profile or from system counters taken during a run, then map it to source. A guess from reading the code is not a limiter.
-- **List what else the number could be measuring, and rule out each one with evidence.** The usual suspects are errors, skipped or cached work, an untuned side, noise, and a piece too small to matter end to end.
-- **Keep the evidence with the number.** Put the run count, the spread, and the limiter in the notes or a linked artifact, so a reader can check the claim.
+- **问"为什么没翻倍？"**说出限定结果的那个资源或代码路径，比如一个核心、一把锁、磁盘、网络，或压测负载生成器本身。从 profile 或运行期间采集的系统计数器里拿到它，再映射回源码。读代码得出的猜测不算限制因素。
+- **列出这个数字还可能在测什么，并用证据逐个排除。**常见的嫌疑有：错误、被跳过或缓存掉的工作、未调优的一侧、噪声，以及端到端占比小到无关紧要的那一段。
+- **让证据跟着数字走。**把运行次数、离散度和限制因素写进笔记或链接的产物里，读者才能核查这个断言。
 
-For a performance number, run the full procedure with the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill. For an eval result, ask the same of the trials: did every run do the task, does the gap hold across trials and models, and does the scenario matter.
+对性能数字，用 [benchmark-checklist](../benchmark-checklist/SKILL.md) skill 走完整流程。对 eval 结果，对多次试验问同样的问题：每次运行是否都完成了任务、差距在多次试验和多个模型之间是否成立、这个场景是否重要。
 
-You skipped this when the evidence behind a number has no run count, no spread, or no named limiter, or when the time saved is larger than the time the changed piece took.
+当一个数字背后的证据没有运行次数、没有离散度、也没有指名的限制因素，或者当省下的时间比被改动那段代码原本的耗时还大时，说明你跳过了这一步。
 
-Distinct from [Prove It Works](../principle-prove-it-works/SKILL.md), which checks that an output is real. This checks that a measured number means what you say it means.
+与[证明它有效](../principle-prove-it-works/SKILL.md)不同，后者检查输出是不是真的；本原则检查测得的数字是否如你所说具有那个含义。

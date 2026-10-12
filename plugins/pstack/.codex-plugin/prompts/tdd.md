@@ -1,7 +1,7 @@
 ---
 name: tdd
-description: fix a bug by writing the failing test first, then the fix
+description: 修复 bug：先写出失败的测试，再写修复
 disable-model-invocation: true
 ---
 
-Invoke the `tdd` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `tdd` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

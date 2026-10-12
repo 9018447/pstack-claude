@@ -1,23 +1,23 @@
 ---
 name: principle-build-the-lever
-description: "Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun."
+description: "适用于任何不平凡的工作，不限于批量工作：编辑、迁移、分析、检查。打造能完成它或证明它的工具（codemod、脚本、生成器，或一份让你的 subagent 照办的 skill），而不是靠手工。工具就是评审者可以重跑的产物。"
 user-invocable: false
 ---
-# Build the Lever
+# 打造杠杆（Build the Lever）
 
-When the work isn't trivial, build the tool that does it instead of doing it by hand.
+工作不平凡时，打造能完成它的工具，而不是动手手工做。
 
-**Why:** Two payoffs. Throughput: a codemod, generator, or script does the work the same way every time and reruns for free. Confidence: the tool is one artifact a reviewer can read and rerun to check the work. Hand-done changes can only be re-verified by redoing them. A deterministic script turns "trust me" into "run this".
+**为什么：**两重回报。吞吐量：codemod、生成器或脚本每次都以同样方式完成工作，且重跑免费。信心：工具是评审者可以阅读并重跑以核查工作的唯一产物。手工改动只能靠重做来复核。确定性脚本把"相信我"变成"跑这个"。
 
-**Pattern:** Default to building the lever. Skip it only when the task is trivial, a couple of obvious edits you can see at a glance.
+**模式：**默认打造杠杆。只有当任务平凡到一眼就能看清的一两处明显编辑时才跳过。
 
-- Do the first unit by hand to learn the recipe, then build the tool. Prove it by rerunning it on that unit and diffing against your hand-done version. Make the lever safe to rerun.
-- Codemod or script for edits, generator for repetitive files, a dump-to-sqlite query for analysis, a rerunnable check for verification.
-- A deterministic lever beats fan-out. If the tool can process every unit in one pass, run it yourself. Don't fan out delegates to hand-apply what a script can do.
-- When you fan work out to subagents, write the lever as a skill they all read: the recipe, the verification contract, and the do-not-touch fences in one artifact. Keep it outside the delegates' write scope so they can't quietly edit the contract.
-- Applying this principle produces a file. If you cited it and there is no codemod, script, generator, or delegate skill in the diff, you didn't apply it.
-- Commit the lever when the work outlives the session.
+- 先手工做第一个单元来摸清配方，然后再造工具。在那个单元上重跑工具并与手工版本做 diff，以此证明它。让杠杆可以安全重跑。
+- 编辑用 codemod 或脚本，重复文件用生成器，分析用 dump 到 sqlite 的查询，验证用可重跑的检查。
+- 确定性的杠杆胜过扇出。如果工具能一遍处理完所有单元，就自己跑。不要扇出一群 delegate 去手工执行一个脚本能做的事。
+- 当你把工作扇出给 subagent 时，把杠杆写成他们都要读的一份 skill：配方、验证契约和不可触碰的围栏，收进同一个产物。把它放在 delegate 的写权限范围之外，让他们无法悄悄改掉契约。
+- 应用本原则会产生一个文件。如果你声称应用了它，而 diff 里没有任何 codemod、脚本、生成器或 delegate skill，那就是没有应用。
+- 当工作会比本次会话活得更久时，把杠杆提交进仓库。
 
-**Balance:** The bar is triviality, not repetition. A one-off still earns a lever when the lever is what makes the work checkable. Per the [Laziness Protocol](../principle-laziness-protocol/SKILL.md), build the smallest script that does or proves the job, never a framework.
+**平衡：**门槛是平凡性，不是重复性。只要杠杆正是让工作变得可检查的东西，一次性工作也值得配一个杠杆。按照[懒惰协议](../principle-laziness-protocol/SKILL.md)，造出最小完成或证明该工作的脚本，绝不造框架。
 
-Distinct from [Encode Lessons in Structure](../principle-encode-lessons-in-structure/SKILL.md), which makes a recurring instruction a durable guardrail. This is throughput and reviewability on the work in front of you. For scripting the verification itself, see [Prove It Works](../principle-prove-it-works/SKILL.md).
+与[把经验教训编码进结构](../principle-encode-lessons-in-structure/SKILL.md)不同，后者把反复出现的指令变成持久的护栏。本原则关注的是眼前工作的吞吐量与可评审性。要把验证本身脚本化，见[证明它有效](../principle-prove-it-works/SKILL.md)。

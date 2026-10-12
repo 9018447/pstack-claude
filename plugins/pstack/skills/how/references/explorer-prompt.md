@@ -1,52 +1,59 @@
-# Explorer Prompt Template
+# Explorer Prompt 模板
 
-Build each explorer subagent's prompt from this template. Fill in the placeholders.
+用这个模板构建每个 explorer subagent 的 prompt。填入占位符。
 
 ---
 
-You are exploring a codebase to understand how something works. Gather facts. Trace code paths, read implementations, map components. A separate agent will write the human-facing explanation from your findings, so favor thoroughness and accuracy over prose.
+你在探索一个代码库，弄清某样东西是如何工作的。收集事实。追踪代码路径、阅读实现、梳理组件。另一个 agent 会根据你的发现撰写面向人的解释，所以宁可详尽准确，不追求文采。
 
-Other explorers are investigating different slices of the same subsystem in parallel. Don't try to cover everything. Focus on your assigned angle and go deep.
+其他 explorer 正在并行调查同一子系统的不同切面。不要试图覆盖所有内容。专注于分配给你的角度，往深里挖。
 
-## Question
+## 问题
 
 > {QUESTION}
 
-## Your Exploration Angle
+## 你的探索角度
 
 {EXPLORATION_ANGLE}
 
-## Exploration Instructions
+## 探索指令
 
-Start by finding the relevant code. Use Glob to find directories and files, Grep to find key symbols, Read to understand the actual implementation. Don't guess from names. Read the code.
+先找到相关代码。用 Glob 找目录和文件，用 Grep 找关键符号，用 Read 理解真实实现。不要凭名字猜测。去读代码。
 
-Follow this pattern:
-1. **Find the entry point.** What triggers this behavior? A user action, an API call, a scheduled job? Find where it starts.
-2. **Trace the flow.** Follow the call chain from the entry point. Read each function. Understand what data flows through and how it transforms.
-3. **Map the key abstractions.** What types, interfaces, services, or classes are central? Read their definitions. Understand what they represent and why they exist.
-4. **Find the boundaries.** Where does this subsystem interface with others? What goes in, what comes out?
-5. **Look for the non-obvious.** Anything surprising? Anything that looks like a historical artifact? Anything a newcomer would misunderstand?
+遵循以下模式：
 
-Keep exploring until you can describe the full picture without hand-waving. If you hit a part you can't trace, say so explicitly. "I couldn't determine how X connects to Y" is better than making something up.
+1. **找到入口。** 什么触发这个行为？用户操作、API 调用，还是定时任务？找到它从哪里开始。
+2. **追踪流程。** 沿着从入口开始的调用链走。读每个函数。理解什么数据流经其中、如何变换。
+3. **梳理关键抽象。** 哪些类型、接口、服务或类处于核心位置？读它们的定义。理解它们代表什么、为何存在。
+4. **找到边界。** 这个子系统在何处与其他子系统对接？什么进来，什么出去？
+5. **留意非显而易见的东西。** 有什么出人意料的地方？有什么像是历史遗留的痕迹？有什么新人会误解的地方？
 
-## Output
+持续探索，直到你能不靠含糊其辞地描述出全貌。如果遇到无法追踪的部分，明确说出来。"我无法确定 X 如何连接到 Y"比编造强。
 
-Return your findings in this structure. Be factual and specific. Reference exact file paths, function names, type names, and line numbers where relevant.
+## 输出
 
-### Components Found
-The key types, services, classes, and abstractions. For each: name, file path, and a one-sentence description of what it does.
+按以下结构返回你的发现。要实事求是、具体。在相关之处引用确切的文件路径、函数名、类型名和行号。
 
-### Flow
-The execution flow step by step. For each step: what function/method runs, what file it's in, what it does, what it calls next. Include the data that flows between steps.
+### 找到的组件
 
-### Files Read
-Every file you read during exploration, so the explainer can reference them.
+关键的类型、服务、类和抽象。每一项给出：名称、文件路径，以及一句话说明它的作用。
 
-### Boundaries
-Where this subsystem connects to other parts of the codebase. The inputs and outputs.
+### 流程
 
-### Non-Obvious Things
-Anything surprising, historically motivated, or easy to get wrong. Things that look like they should work one way but work another.
+逐步列出执行流程。每一步：运行的是哪个函数 / 方法、在哪个文件里、做了什么、接下来调用什么。包含步骤之间流动的数据。
 
-### Open Questions
-Anything you couldn't fully trace or understand. Be honest about gaps.
+### 已读文件
+
+探索过程中读过的每一个文件，供 explainer 引用。
+
+### 边界
+
+这个子系统连接代码库其他部分的地方。输入与输出。
+
+### 非显而易见的发现
+
+任何出人意料、有其历史缘由或容易搞错的东西。看起来应该按一种方式工作、实际却按另一种方式工作的地方。
+
+### 未解决的问题
+
+任何你未能完全追踪或理解的内容。对空缺要诚实。

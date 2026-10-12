@@ -1,7 +1,7 @@
 ---
 name: fix-ci
-description: find failing PR checks, inspect logs, apply focused fixes
+description: 找出失败的 PR 检查，查看日志，应用针对性修复
 disable-model-invocation: true
 ---
 
-Invoke the `fix-ci` skill and follow it. Resolve Claude tool names, Claude model names, and Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.
+调用 `fix-ci` skill 并遵循其指引。通过 `poteto-mode/references/codex-tools.md` 解析 Claude 工具名、Claude 模型名和 Claude 内置 skill，包括其中针对各 skill 的注意事项。

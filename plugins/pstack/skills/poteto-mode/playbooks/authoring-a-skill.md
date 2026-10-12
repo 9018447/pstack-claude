@@ -1,12 +1,12 @@
-### Authoring or modifying a skill
+### 编写或修改 skill
 
-**You own the skill's voice.**
+**skill 的笔调由你负责。**
 
-1. Use the **plugin-dev:skill-development** skill (Claude Code's authoring guidance for SKILL.md files).
-2. Validate the skill: frontmatter has `name` and `description`, referenced files exist, cross-skill links resolve.
-3. Test cases if structural. Skip if subjective.
-4. Run **Opening a PR**.
+1. 使用 **plugin-dev:skill-development** skill（Claude Code 的 SKILL.md 编写指南）。
+2. 校验该 skill：frontmatter 含 `name` 和 `description`，引用的文件存在，跨 skill 链接可达。
+3. 涉及结构就写测试用例；主观内容则跳过。
+4. 运行 **Opening a PR**。
 
-When in doubt, delete. Keep only prose that changes a decision. Tell it to do the thing and skip the reason. Explain only when the rule is confusing without one. Match tone to scope. Point at structural sources (types, READMEs, config) per the **encode-lessons-in-structure** principle skill. Delegate to other skills by path. Don't restate. A workflow you keep hitting but isn't captured → propose a new skill.
+拿不准就删。只留下能改变决策的文字。让它去做那件事，省掉理由。只有在缺了理由规则会让人困惑时才解释。笔调匹配范围。按 **encode-lessons-in-structure** 原则 skill，指向结构性源头（类型、README、配置）。按路径委托给其他 skill。不要复述。你反复撞见却未被沉淀的工作流 → 提议一个新 skill。
 
-**Reply:** summary of the skill, key design decisions, validation notes.
+**回复：**skill 的摘要、关键设计决策、校验说明。

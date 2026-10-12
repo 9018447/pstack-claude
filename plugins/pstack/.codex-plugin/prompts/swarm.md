@@ -1,7 +1,7 @@
 ---
 name: swarm
-description: fan out N parallel workers across slices or races, then return one aggregated report
+description: 把 N 个并行 worker 分派到各切片或竞速上，最后返回一份汇总报告
 disable-model-invocation: true
 ---
 
-Invoke the `swarm` skill and follow it.
+调用 `swarm` skill 并遵循其指引。

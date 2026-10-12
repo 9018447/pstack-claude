@@ -1,7 +1,7 @@
 ---
 name: teach
-description: explain a subsystem plainly by composing how + why
+description: 组合 how 与 why，平实地讲解一个子系统
 disable-model-invocation: true
 ---
 
-Invoke the `teach` skill and follow it.
+调用 `teach` skill 并遵循其指引。

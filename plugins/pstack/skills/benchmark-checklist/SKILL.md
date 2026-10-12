@@ -1,38 +1,38 @@
 ---
 name: benchmark-checklist
-description: "Vet a perf measurement (limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened) before you report or act on it. Use when you run a benchmark or report a speedup or regression you measured."
+description: "在报告一项性能度量或依据它行动之前，先审查它（限制因素、调优、上限、错误、可重复性、相关性，以及工作是否真的发生了）。当你运行基准测试，或要报告自己测得的提速或回退时使用。"
 ---
 
-# Benchmark checklist
+# 基准测试清单
 
-Use this when you produce a performance number: a PR's before and after, a regression claim, a hillclimb harness, or a library or config choice. [Explain the Number](../principle-explain-the-number/SKILL.md) says why. Answer each question below with evidence from a run, not from a guess about the code.
+当你产出一个性能数字时使用本清单：PR 的前后对比、一个回退论断、一个 hillclimb harness，或一次库或配置的选型。[解释这个数字](../principle-explain-the-number/SKILL.md)说明了为什么。下面每个问题都要用来自实际运行的证据回答，而不是凭对代码的猜测。
 
-For a quick ballpark the user asked for, one run is enough. Still check questions 4 and 7, and say that it is one run. Skip the rest unless that run looks wrong. A choice between options is never a ballpark.
+如果用户要的只是快速估算，跑一次就够。但问题 4 和 7 仍要检查，并说明这只是一次运行。其余问题可以跳过，除非那次运行看起来不对。在多个选项之间做选择时，永远不算快速估算。
 
-## Before you run anything
+## 运行任何东西之前
 
-- Write down the claim you expect to make, in the words you would ship ("export is 30% faster at p50 on the 60k-row dataset"). The questions test that sentence.
-- Read the measurement script. Note what it times, what it counts, and what it ignores.
-- Check the load average with `uptime` and the core count with `nproc`. If the machine is busy, find out what is running. If you cannot stop it, interleave the sides so both see the same noise, and say so in the report.
+- 把你预期要下的论断写下来，用你将要交付的措辞（"export 在 60k 行数据集上 p50 快 30%"）。下面的问题检验的就是这句话。
+- 读测量脚本。记下它计的是什么时、数的是什么数、忽略的是什么。
+- 用 `uptime` 查看负载均值，用 `nproc` 查看核心数。如果机器正忙，查清在跑什么。如果停不掉，就把两侧交错运行，让两边看到同样的噪声，并在报告中说明。
 
-## The questions
+## 问题
 
-1. **Why not double?** Name the limiter. Profile in a run you do not report, because profilers and tracers slow the work down. Use CPU per process (`top`, `pidstat`), a profiler for the runtime (`node --cpu-prof`, `py-spy`, `perf`), I/O wait, and syscall counts (`strace -c` on Linux). Then map the hot spot to source. Watch the load generator too. If it saturates first, you measured the load generator. If a change did not move the number, the limiter explains why, so find it before you call the change useless.
-2. **Was it tuned?** Run every side the way production runs it: release builds, production flags and env, batching and transaction settings, connection pools, caches as warm or cold as production sees them, and the same versions and data. If one side runs on defaults, you compared configurations, not implementations. A limiter that is a setting, such as a commit per row, a debug build, or a missing index, means that side is untuned. Tune it and measure again before you pick a winner. If you cannot tune it, do not pick a winner from that run. Narrowing the claim to the code as it ships today does not fix this when the user is choosing what to adopt, because they adopt the option, not today's settings.
-3. **Did it break limits?** Do the arithmetic. Compare bytes per second with disk and network bandwidth, and operations per second times the cost per operation with the cores you have. Compare the time saved with the time the changed piece took. Removing a piece that takes 10% of the run can make the run at most about 11% faster. A result past a limit means the run measured something other than the work, such as a cache, a no-op, or a bug.
-4. **Did it error?** Count failures and non-success responses, and check that the outputs are correct, not just present. Errors behave differently from successes. Rejections are often fast, and timeouts and retries are slow. If the script does not count errors, add the count.
-5. **Does it reproduce?** Run each side at least 5 times, and alternate the sides (A, B, A, B, and so on) so that warmup, lazy initialization, caches, and drift do not favor one side. Report the median and the range. Treat a gap smaller than the run-to-run variation as no measurable difference. When the call is close, use a rank-sum test or the harness's own statistics.
-6. **Does it matter?** Next to any micro result, measure the end-to-end path a user waits on, with realistic data sizes and concurrency. Report the micro result as a share of the whole. A helper that takes 1% of a request can make the request at most 1% faster, however fast the helper gets.
-7. **Did it even happen?** Confirm the work ran inside the timed region. The request reached the server, the rows were written, the bytes were read, and the code used the result. Lazy code (generators nobody iterates, promises nobody awaits, results the JIT can discard) and timeouts all produce numbers for work that never happened.
+1. **为什么没翻倍？** 指出限制因素。剖析要在你不打算报告的那次运行里做，因为 profiler 和 tracer 会拖慢工作。用按进程的 CPU（`top`、`pidstat`）、运行时的 profiler（`node --cpu-prof`、`py-spy`、`perf`）、I/O 等待和系统调用计数（Linux 上用 `strace -c`）。然后把热点对应到源码。也要盯着负载生成器：如果它先饱和了，你测到的其实是负载生成器。如果某个改动没有让数字变化，限制因素能解释原因——在断定改动没用之前，先找到它。
+2. **调优了吗？** 每一侧都按生产环境的运行方式来跑：release 构建、生产环境的 flag 和环境变量、批处理与事务设置、连接池、与生产所见一致的冷热缓存状态，以及相同的版本和数据。如果某侧用的是默认配置，你比较的就是配置，而不是实现。如果限制因素只是一个设置——比如每行一次提交、debug 构建、缺一个索引——说明那一侧没有调优。选定赢家之前，先调优再重新测量。如果调不了，就不要从那次运行里选赢家。当用户是在选择要采用哪个方案时，把论断收窄到"今天出厂的代码"也救不了这一点，因为他们采用的是那个选项，而不是今天的设置。
+3. **突破上限了吗？** 做算术。把每秒字节数与磁盘和网络带宽比，把每秒操作数乘以单次操作成本与现有核心数比。把节省的时间与被改部分原本的耗时比。移除占整个运行 10% 的部分，最多只能让运行快约 11%。结果超出某个上限，说明运行度量的不是那件事本身，而是缓存、空操作或某个 bug。
+4. **出错了吗？** 统计失败次数和非成功响应，并确认输出正确，而不只是存在。错误的行为与成功不同：拒绝往往很快，超时和重试则很慢。如果脚本没有统计错误，就把统计加上。
+5. **能复现吗？** 每侧至少跑 5 次，两侧交替进行（A、B、A、B，以此类推），让预热、惰性初始化、缓存和漂移不偏向任何一侧。报告中位数和区间。小于运行间波动的差距视为无可测差异。当结论接近时，使用秩和检验或 harness 自带的统计。
+6. **要紧吗？** 在任何微观结果旁边，同时度量用户实际等待的端到端路径，用真实的数据规模和并发度。把微观结果报告为占整体的比例。一个只占请求 1% 的辅助函数，无论变得多快，最多让请求快 1%。
+7. **它到底发生了吗？** 确认工作确实运行在计时区间内：请求到达了服务器、行写入了、字节读取了、代码用到了结果。惰性代码（没人迭代的生成器、没人 await 的 promise、JIT 可以丢弃的结果）和超时，都会为从未发生的工作产出数字。
 
-## Report
+## 报告
 
-- Lead with the verdict: faster, slower, no measurable difference, or inconclusive.
-- Give the number with its unit, the run count, the range, and the limiter. For example, "p50 41 ms → 33 ms, median of 7 runs per side, range 32 to 35 ms after, bound by JSON parsing on one core."
-- Call the verdict inconclusive when you claim a difference but cannot name the limiter, when a side ran untuned, or when you could not check questions 4 and 7. Name the gap.
-- Keep a PR body to one primary number, per the **Opening a PR** playbook. Put the runs, the range, and the limiter evidence in a linked artifact or a notes file.
+- 先给结论：更快、更慢、无可测差异，或无法定论。
+- 给出带单位的数字、运行次数、区间和限制因素。例如："p50 41 ms → 33 ms，每侧 7 次运行取中位数，改后区间 32 到 35 ms，受单核 JSON 解析限制。"
+- 当你声称有差异却说不出限制因素、某侧未经调优，或你无法检查问题 4 和 7 时，把结论标为无法定论。写明缺口在哪里。
+- PR 正文只保留一个主要数字，遵循 **Opening a PR** playbook。把各次运行、区间和限制因素证据放进一个链接的产物或笔记文件。
 
-## How this fits the other perf material
+## 本清单与其他性能材料的关系
 
-- The **Perf issue** playbook finds and fixes slowness, and the performance mantras in its step 2 generate the fixes. This skill vets its baseline before the playbook plans from it, and every number after that.
-- The **Hillclimb** playbook loops on one metric. This skill vets its harness before the harness is frozen. The frozen harness then prints error and work counts, so each keep-or-revert checks questions 4 and 7 for free.
+- **Perf issue** playbook 负责发现并修复变慢，其第 2 步中的性能箴言用于生成修复。在 playbook 以基线为前提做规划之前，本 skill 先审查该基线，以及其后的每一个数字。
+- **Hillclimb** playbook 围绕单个指标循环。在 harness 被冻结之前，本 skill 先审查它。冻结后的 harness 会打印错误计数和工作量计数，因此每次保留或回退的判断都顺带完成了问题 4 和 7 的检查。

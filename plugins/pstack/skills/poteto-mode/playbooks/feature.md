@@ -1,21 +1,21 @@
-### Feature
+### 功能开发（Feature）
 
-**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
+**设计由你负责。计划、审查、验证。** 委托实现，自己留在主导位。
 
-1. `how` over the affected subsystem.
-2. `architect` for parallel design exploration.
-3. Write the throughput checkpoint as four todo items. A dimension that genuinely does not apply (single file, no fan-out) keeps its item with `n/a: <reason>` rather than being dropped:
-   - **Blocking first steps.** Gates run before fan-out.
-   - **Independent workstreams.** Disjoint files, services, or layers parallelize. Shared writes serialize.
-   - **Shared mutable state.** Default to splitting the target (the **separate-before-serializing-shared-state** principle skill). Serialize only for real invariants.
-   - **Smallest safe decomposition.** If one worker is best, name why.
-4. Delegate code-writing to a subagent using your configured feature model (default in poteto-mode's Models section) with a specific scope (file paths, named data shape and its organizing structure per **principle-model-the-domain**, a state machine over scattered booleans, a table/registry over branching, a typed model over repeated shape assumptions, chosen before the delegate writes logic, and success criteria). When the implementation admits multiple valid shapes (error handling, abstraction layer, test structure), delegate via the **arena** skill instead so the runners surface the alternatives and the cross-judge guards the pick. Mandatory: no skip-with-reason escape, and Laziness Protocol does not override it (the gain is review separation, not lines saved). A subagent forbidden to spawn satisfies this by owning the diff directly with the same review separation. No "standing by" reply that waits on a nested agent. **Give every file-writing delegate its own worktree** (spawn it with `isolation: "worktree"`, or hand it an exclusive branch), and do not write files or run a suite in a worktree a delegate still holds. On Claude Code, `isolation: "worktree"` branches from the remote default branch unless the `worktree.baseRef` setting is `"head"`. When the delegate builds on commits the default branch lacks, commit them, create its worktree with `git worktree add <path> -b <delegate-branch> HEAD`, and name that base commit in the brief. Fencing a file in the brief's prose is not a lock (**principle-separate-before-serializing-shared-state**). Comments per **Comments**. Surgical edits, re-ground against the source for upstream-derived files. Port shared-primitive improvements to all consumers and verify each. Commit liberally.
-5. Verify on the matching surface. "Inconclusive" or wrong-surface is not a pass. Flag it.
-6. Rebase into small, ordered commits. Stack follow-ups.
-   Use the **sequence-verifiable-units** principle skill, building, verifying, and committing each small unit before the next.
-7. If the design is contested, `interrogate` before shipping.
-8. Run **Opening a PR**.
+1. 用 `how` 扫受影响的子系统。
+2. 用 `architect` 做并行设计探索。
+3. 把吞吐检查点写成四条 todo 项。确实不适用的维度（单文件、无扇出）保留该项并标注 `n/a: <reason>`，不许删：
+   - **先行的阻塞步骤。** 门禁在扇出之前跑。
+   - **独立的工作线。** 不相交的文件、服务或层可以并行。共享写入必须串行。
+   - **共享可变状态。** 默认拆分目标（**separate-before-serializing-shared-state** 原则 skill）。只有真正的不变量才串行。
+   - **最小安全分解。** 如果一个 worker 最优，说明原因。
+4. 把写代码委托给一个 subagent，用你配置的 feature 模型（默认见 poteto-mode 的 Models 章节），给明确范围（文件路径；点名的数据形状及其组织结构——按 **principle-model-the-domain**，用状态机取代散落的布尔值、用表/注册表取代分支、用带类型的模型取代重复的形状假设，这些都要在受托者写逻辑之前定好；以及成功标准）。实现允许多种合理形态时（错误处理、抽象层、测试结构），改用 **arena** skill 委托，让各 runner 摆出备选方案、由 cross-judge 把关选择。强制要求：不允许"说明理由即可跳过"的豁免，Laziness Protocol 也不能覆盖它（收益在审查分离，不在省行数）。被禁止再派生的 subagent 用同样的审查分离亲自持有 diff 来满足这条。不要用"随时待命"式回复去等一个嵌套 agent。**给每个写文件的受托者配它自己的工作树**（用 `isolation: "worktree"` 派生，或给它一条独占分支），并且在受托者仍持有工作树时，不要在里面写文件或跑测试套件。Claude Code 上，`isolation: "worktree"` 默认从远端默认分支开分支，除非 `worktree.baseRef` 设置为 `"head"`。受托者要基于默认分支还没有的提交时，先提交它们，用 `git worktree add <path> -b <delegate-branch> HEAD` 建它的工作树，并在 brief 里点名那个基提交。在 brief 文字里圈定文件不构成锁（**principle-separate-before-serializing-shared-state**）。评论按 **Comments** 执行。精准修改；对来自上游的文件，先对照源头重新校准。把共享原语的改进移植到所有消费方并逐一验证。随时多提交。
+5. 在匹配的表面上验证。"不确定"或表面不对不算通过，要标记出来。
+6. 整理成小而有序的提交。把后续工作堆成栈。
+   使用 **sequence-verifiable-units** 原则 skill：每个小单元先构建、验证、提交，再进入下一个。
+7. 设计有争议时，上线前先 `interrogate`。
+8. 运行 **Opening a PR**。
 
-Code-coupled work (one feature, one migration) goes to a single owner with the checkpoint inline. That owner fans out internally after the blocking phase. Parent-level fan-out is for slices that produce independent artifacts (audits, cross-subsystem investigations, competing experiments). Rewrite the checkpoint at phase boundaries. Spawn a fresh owner rather than chaining interrupts.
+代码耦合的工作（一个功能、一个迁移）交给单一 owner，检查点内联。该 owner 在阻塞阶段之后内部扇出。父层扇出留给产出独立成品的切片（审计、跨子系统调查、竞争性实验）。在阶段边界重写检查点。派生新的 owner，而不是链式中断。
 
-**Reply:** what you built, what you chose and why, the throughput checkpoint, open decisions. Tables for design alternatives.
+**回复：**你造了什么、选了什么及原因、吞吐检查点、未决决定。设计备选方案用表格。

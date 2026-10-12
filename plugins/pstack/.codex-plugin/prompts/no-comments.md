@@ -1,7 +1,7 @@
 ---
 name: no-comments
-description: strip comments before review, fix the accepted findings, encode claimed constraints
+description: 在审查前去除注释，落实被采纳的发现，把声称的约束编码下来
 disable-model-invocation: true
 ---
 
-Invoke the `no-comments` skill and follow it.
+调用 `no-comments` skill 并遵循其指引。
