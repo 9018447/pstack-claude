@@ -1,89 +1,93 @@
-# pstack
+# pstack（简体中文版）
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/codenyer)
+本仓库由 `9018447` 维护，是 [michael-denyer/pstack-claude](https://github.com/michael-denyer/pstack-claude) 的第三方**简体中文汉化版**，非官方仓库。上游本身是 Lauren Tan 的 [pstack](https://github.com/cursor/plugins/tree/main/pstack)（一个提升 agent 工作成效的 Cursor skill 栈）面向 Claude Code、Codex、Pi、GitHub Copilot 及其他 agent harness 的移植。以下中文版安装方式均指向本仓库；英文原版见[上游仓库](https://github.com/michael-denyer/pstack-claude)。
 
-Lauren Tan's [pstack](https://github.com/cursor/plugins/tree/main/pstack) is an opinionated Cursor skill stack that improves agent outcomes. This is a port for Claude Code, Codex, Pi, GitHub Copilot and other agent harnesses. It tracks upstream and also carries named policy forks, each declared in [`tools/forks.json`](tools/forks.json).
+自 **0.9.82** 起，本仓库把插件的全部内容译为简体中文：每个 skill（SKILL.md、references、playbooks）、plugin agents、effort agents、session hooks 和 Codex prompt stubs。翻译只动散文：frontmatter 键名与 `name` 值、代码块、命令、路径、URL、逐字触发短语和示例引文保留英文，因此 skill 分发、按路径加载和脚本行为与上游一致。术语定译见 [GLOSSARY.md](GLOSSARY.md)。
 
-Tell `poteto-mode` your goal and it will invoke the correct workflow for the task. It keeps your code concise, simple and verified.
+告诉 `poteto-mode` 你的目标，它会为任务调用正确的工作流。它让你的代码简洁、简单、经过验证。
 
-For concurrency bugs and invariants that tests cannot reach, see the separate [agent-formal-verify](https://github.com/michael-denyer/agent-formal-verify) plugin, which adds TLA+ model checking and Lean proofs.
+对于并发缺陷和测试覆盖不到的不变量，另见独立的 [agent-formal-verify](https://github.com/michael-denyer/agent-formal-verify) 插件，它提供 TLA+ 模型检查和 Lean 证明。
 
-## Install
+## 安装
+
+插件安装由各 agent 按其更新机制管理。**中文版命令均指向 `9018447/pstack-claude`**；英文上游仓库的 marketplace 命令不适用于中文版。插件自动更新按版本号安装：新内容需要版本号提升后，安装端才能获取。本仓库内容改动由 pre-commit 钩子自动补版本号（见 [CLAUDE.md](CLAUDE.md)）。
 
 ### Claude Code
 
-Run in Claude Code:
+在 Claude Code 中运行：
 
 ```text
-/plugin marketplace add michael-denyer/pstack-claude
+/plugin marketplace add 9018447/pstack-claude
 /plugin install pstack@pstack-claude
 ```
 
+默认不会自动更新。安装后，在 `/plugin` → Marketplaces 中为 `pstack-claude` 一次性开启自动更新；若提示找不到插件，先运行 `/plugin marketplace update` 再重试。
+
 ### Codex
 
-Run in your terminal:
+在终端运行：
 
 ```shell
-codex plugin marketplace add michael-denyer/pstack-claude
+codex plugin marketplace add 9018447/pstack-claude
 codex plugin add pstack@pstack-claude
 ```
 
 ### Pi
 
-Run in your terminal:
+在终端运行：
 
 ```shell
-pi install git:github.com/michael-denyer/pstack-claude
+pi install git:github.com/9018447/pstack-claude
 ```
 
-The package loads the skills and the pstack Pi extension, which adds the subagent, question, and wake-up tools the skills use, plus `/loop` and the routing instruction. Invoke a skill with `/skill:<name>`.
+该包会加载 skills 和 pstack Pi 扩展：扩展补上 skills 用到的 subagent、question 和 wake-up 工具，外加 `/loop` 和路由指令。用 `/skill:<name>` 调用 skill。
 
 ### GitHub Copilot
 
-Run in your terminal:
+在终端运行：
 
 ```shell
-copilot plugin marketplace add michael-denyer/pstack-claude
+copilot plugin marketplace add 9018447/pstack-claude
 copilot plugin install pstack@pstack-claude
 ```
 
-This installs pstack for the Copilot CLI and the GitHub Copilot app, which share `~/.copilot`. Start a new session afterwards. Copilot ships no default pstack models, so the first skill that needs one runs `setup-pstack` to pick from the models your account lists, and later sessions reuse that choice.
+这会为 Copilot CLI 和 GitHub Copilot app（共享 `~/.copilot`）安装 pstack。安装后新开会话。Copilot 不带默认 pstack 模型，第一个需要角色模型的 skill 会运行 `setup-pstack`，从你账号可用的模型中挑选，之后的会话复用该选择。
 
-The Copilot build is tested on Copilot CLI 1.0.87 through 1.0.92. On those versions the routing hook's context reaches the session alongside other plugins' session-start context. If a later version keeps only one plugin's context, `setup-pstack` offers a [standing instruction](plugins/pstack/skills/setup-pstack/copilot.md#wire-it-in) for `~/.copilot/copilot-instructions.md` instead. On 1.0.92, once the CLI caches its computer-use experiment assignment, `copilot -p` sessions list no plugin skills and a `skill` call returns "Skill not found". Interactive sessions, the hooks, and the agents are unaffected.
+运行 `setup-pstack` 可以改模型默认值、按角色设置推理力度（例如 `arena runners: opus @xhigh, fable @max`，Claude Code 经插件的 `pstack:effort-<level>` 或 `pstack:poteto-agent-<level>` agents 分发；未指定档位的角色沿用会话力度，除非配置表的 `default effort` 行另有指定），或关闭自动路由。插件在 Claude Code、Codex 和 GitHub Copilot 上安装路由 hook；Codex 会先请你通过 `/hooks` 信任它。在 Pi 上由扩展注入同一路由指令。在 Claude Code 和 Copilot CLI 中使用 `/pstack:setup-pstack`。
 
-Run `setup-pstack` to change model defaults, set a reasoning effort per role (for example `arena runners: opus @xhigh, fable @max`, which Claude Code dispatches through the plugin's `pstack:effort-<level>` or `pstack:poteto-agent-<level>` agents; roles without a level keep the session's effort unless the sheet's `default effort` line names one), or turn automatic routing off. The plugin installs the routing hook on Claude Code, Codex, and GitHub Copilot; Codex asks you to trust it through `/hooks` before it runs. On Pi the extension injects the same routing instruction. In Claude Code and the Copilot CLI, use `/pstack:setup-pstack`.
+Prime Agent、OpenCode、Gemini CLI 或任意 harness 的 skills-only 安装见[共享安装说明](docs/reference.md#shared-skills-installation)。
 
-For Prime Agent, OpenCode, Gemini CLI, or skills-only installs for any harness, see [shared installation](docs/reference.md#shared-skills-installation).
-
-## Getting started
+## 快速上手
 
 ```text
-Use poteto-mode to fix the search filter resetting when I change pages.
+用 poteto-mode 修复搜索筛选器在翻页时被重置的问题。
 ```
 
-For a bug, it reproduces the failure, uses `how` and `why` to investigate, delegates the fix, then reruns the failing case. If the fix crosses a function boundary, it brings in `architect` before implementation. You receive the fix and the failing and passing evidence.
+对缺陷：它复现失败，用 `how` 和 `why` 调查，委托修复，然后重跑失败用例。修复跨越函数边界时，实现之前会先引入 `architect`。你拿到的是修复本身，外加失败与通过的证据。
 
-[Other playbooks](plugins/pstack/skills/poteto-mode/SKILL.md#playbooks) cover planning, features, refactoring, performance issues, investigations, prototypes, PR maintenance, shipping, and longer projects.
+[其他 playbook](plugins/pstack/skills/poteto-mode/SKILL.md#playbooks) 覆盖规划、功能开发、重构、性能问题、调查、原型、PR 维护、发布交付和更长周期的项目。
 
-![poteto-mode on Claude Code, Codex, and Pi turns a request into verified work. Choose a playbook, plan and delegate with architect, arena, or swarm, then review and verify with interrogate, tests, and measurements. Project playbooks customize the workflow, and setup-pstack configures the model and reasoning effort per role. Supporting skills include how, why, and unslop.](assets/pstack-overview.png)
+![poteto-mode 在 Claude Code、Codex 和 Pi 上把一个请求变成经过验证的工作。选择 playbook，用 architect、arena 或 swarm 规划与委派，再用 interrogate、测试和测量做审查与验证。项目 playbook 定制工作流，setup-pstack 按角色配置模型与推理力度。辅助 skill 包括 how、why 和 unslop。](assets/pstack-overview.png)
 
-## Details
+## 详细文档
 
-- [Skills and slash commands](docs/reference.md#slash-commands)
-- [Runtime setup](docs/reference.md#runtime-support)
-- [Models and dependencies](docs/reference.md#configuration-and-dependencies)
-- [Maintenance and port scope](docs/reference.md#maintenance)
+- [Skills 与斜杠命令](docs/reference.md#slash-commands)
+- [各运行时配置](docs/reference.md#runtime-support)
+- [模型与依赖](docs/reference.md#configuration-and-dependencies)
+- [维护与移植范围](docs/reference.md#maintenance)
 
-## Data handling
+以上链接指向上游英文参考文档；`docs/` 目录暂未翻译。
 
-pstack has no server or telemetry. Anything its skills ask your agent to read, including session transcripts, goes to your model provider. Scripts run locally, and PR tools use your GitHub CLI login.
+## 数据处理
 
-## Contributing
+pstack 没有服务器，也没有遥测。skills 让 agent 读取的一切内容（包括会话 transcript）都只发往你的模型提供商。脚本在本地运行，PR 工具使用你的 GitHub CLI 登录。
 
-Thanks for helping make this port better. Bug reports, documentation fixes, and runtime improvements are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the checks and where your change belongs. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+## 贡献
 
-To support maintenance of this port, [buy the maintainer a coffee](https://buymeacoffee.com/codenyer).
+翻译问题（误译、术语不一致）直接开 issue 或 PR。上游功能缺陷请先在上游仓库确认，再决定是随上游修复同步过来，还是在本仓库先行处理。漏洞按 [SECURITY.md](SECURITY.md) 私下报告。
 
-## License
+汉化工作与上游维护均欢迎支持：[给上游移植维护者买杯咖啡](https://buymeacoffee.com/codenyer)。
 
-This port, including its modifications and additions, is also [MIT-licensed](LICENSE), © 2026 Michael Denyer. Original pstack © 2026 Lauren Tan; imported cursor-team-kit skills © 2026 Cursor. See [LICENSE-cursor-team-kit](LICENSE-cursor-team-kit) and [NOTICE.md](NOTICE.md).
+## 许可证
+
+本汉化版遵循上游许可：移植版及其修改与新增内容以 [MIT](LICENSE) 授权，© 2026 Michael Denyer；原版 pstack © 2026 Lauren Tan；导入的 cursor-team-kit skills © 2026 Cursor。见 [LICENSE-cursor-team-kit](LICENSE-cursor-team-kit) 与 [NOTICE.md](NOTICE.md)。中文翻译部分同样以 MIT 授权。

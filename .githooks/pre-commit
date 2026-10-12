@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# pstack-claude 汉化仓库的 pre-commit 钩子，经 `git config core.hooksPath .githooks` 启用。
+# 两件事：
+# 1. 密钥扫描：本次提交新增的行命中已知密钥/令牌特征即拒绝。
+# 2. 内容改动自动补版本：plugins/pstack 内容改了而 VERSION 没动时，
+#    自动提升 patch 版本并同步清单与 CHANGES.md——插件按版本号自动更新，
+#    漏掉版本号等于发布无效。手动发版（staged 里有 VERSION）时钩子不干预。
+set -euo pipefail
+
+# ---------- 1. 密钥扫描 ----------
+# 前缀清单而非熵检测，漏检自签名/冷门令牌；刻意不写 "api_key=xxx" 之类的
+# 泛化规则，避免文档内容误报。误报请改写措辞；确属安全内容 --no-verify 跳过。
+staged_adds=$(git diff --cached --diff-filter=AM -U0 | grep '^[+]' | grep -v '^[+][+][+]' || true)
+if [ -n "$staged_adds" ] && echo "$staged_adds" | grep -En \
+'sk-ant-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|glpat-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35}|hf_[A-Za-z0-9]{34}|npm_[A-Za-z0-9]{36}|-----BEGIN [A-Z ]*PRIVATE KEY-----'; then
+  echo "pre-commit: 疑似密钥/令牌，见上方标号行。误报请改写；确认安全可 git commit --no-verify 跳过。" >&2
+  exit 1
+fi
+
+# ---------- 2. 内容改动自动补版本 ----------
+# 合并提交不自动发版，冲突解决者优先。
+if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+  exit 0
+fi
+
+# 触发面只限真正随插件分发的路径；README、GLOSSARY、scripts、.githooks
+# 不进安装包，改动它们不需要版本号变化。
+if ! git diff --cached --name-only -- \
+    'plugins/pstack/skills/*' 'plugins/pstack/agents/*' 'plugins/pstack/effort-agents/*' \
+    'plugins/pstack/hooks/*' 'plugins/pstack/.codex-plugin/prompts/*' 'plugins/pstack/pi/*' |
+    grep -q .; then
+  exit 0
+fi
+
+# staged 里已有 VERSION 就是手动发版，钩子不干预。
+if git diff --cached --name-only -- VERSION | grep -q .; then
+  exit 0
+fi
+
+# 提交信息此时尚未写入 COMMIT_EDITMSG（pre-commit 先于消息准备运行），
+# 读不到本次提交的说明，因此条目标题固定，由作者提交前补充。
+entry_title="内容更新"
+
+OLD_VER=$(tr -d '[:space:]' < VERSION)
+NEW_VER=$(awk -F. -v OFS=. '{$NF = $NF + 1; print}' <<< "$OLD_VER")
+echo "$NEW_VER" > VERSION
+
+node "$(git rev-parse --show-toplevel)/scripts/sync-plugin-version.mjs"
+
+# 在 CHANGES.md 第一个版本条目前插入新条目。
+ENTRY="$NEW_VER - ${entry_title}"
+ENTRY="$NEW_VER" awk '
+  { if (!done && /^## /) { printf "## %s - 内容更新\n\n本条目由 pre-commit 钩子自动生成：请把标题改为本次版本的实际说明，并补充改动清单，再提交。\n\n", ENVIRON["ENTRY"]; done = 1 } { print } }
+' CHANGES.md > CHANGES.md.tmp && mv CHANGES.md.tmp CHANGES.md
+
+git add VERSION CHANGES.md package.json .claude-plugin/marketplace.json \
+  plugins/pstack/.claude-plugin/plugin.json plugins/pstack/.codex-plugin/plugin.json \
+  plugins/pstack/.github/plugin/plugin.json
+
+echo "pre-commit: 内容改动，已自动把版本提升到 $NEW_VER 并同步清单与 CHANGES.md。"
