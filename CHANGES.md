@@ -2,6 +2,10 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.84 - rewrite the bare-fragment links the first pass missed
+
+The anchor rewrite covered links with a path but missed bare same-file fragments (`(#models)`, `(#shape)`, `(#choosing-one-model)`, `(#get-set-up)`, `(#other-runtimes)`): the link matcher required a target before the `#`. This release rewrites the 22 remaining ones to the GitHub slugs of the translated headings, verified against each target file's headings.
+
 ## 0.9.83 - reconcile the translation with the generator pipeline
 
 The Simplified Chinese translation joined the upstream-tracking pipeline instead of fighting it. The generator (`tools/generate.mjs`) reads `tools/forks.json` and leaves every declared fork unstamped, unscanned, and out of the orphan sweep, and it skips translated copies of generator-written artifacts (the effort agents, the Codex prompt stubs, the portable-asset copies, and the port-only references and hooks) by content, so an upstream-shaped English tree stays fully generator-owned. All translated files are registered in the fork registry, both sync dry-runs against the pinned upstream SHAs pass, and the per-skill notes table headers (`| Skill | On <runtime> |`) are restored as structural anchors that `loadLeadLines` parses.

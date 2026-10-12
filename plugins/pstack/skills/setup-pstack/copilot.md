@@ -63,7 +63,7 @@ Per-role model choices for pstack skills on GitHub Copilot, written by setup-pst
 3. **小组模型 1/3**，然后 **小组模型 2/3**，再 **小组模型 3/3**，作为三个独立的问题。"小组模型 N/3：小组每个模型跑一个 subagent，来自不同厂商的模型能抓住不同的错误。"在第 2 和第 3 个槽位，先列出尚未进入小组的厂商，再列出其余，然后是 `inherit-parent`。不要提供已在小组中的模型。
 4. **更多小组模型。** "添加第 4 个小组模型？"，第一个选项为 `Done`，第二个为 `Add a 4th`。选择添加则用同样方式再问一个槽位，然后再问是否要第 5 个。最多提供到 5 个模型。
 5. **厂商检查。** 当小组的模型 ID（不计 `inherit-parent`）全部来自同一厂商、且检测到不止一个厂商时，问"小组是单一厂商（Claude）的，它的交叉检查会共享盲区。"，选项为 `Pick the panel again` 和 `Keep it anyway`。重新挑选则回到小组模型 1。`Keep it anyway` 会在 `session hook` 行之后写入 `panel vendors: any` 行。当只检测到一个厂商时，跳过此问题，写入 `panel vendors: any`，并在步骤 8 中说明小组的多样性降低了。只含 `inherit-parent` 的小组无需检查。
-6. **单独覆盖。** "要覆盖某个单独的角色吗？"，第一个选项为 `No, write the sheet (Recommended)`，然后每个层级行一个选项，标签中带上该行的当前值，如 `Strongest (<its model ID>)`。选中某行会问要改该行中的哪个角色，然后按[选择单个模型](#choosing-one-model)的方式为该角色问一个模型，其当前值放第一位并标注 `(current)`。小组角色则改为按问题 3 到 5 的方式询问其列表的各槽位。每次覆盖之后重新问这个问题，直到答案是 `No, write the sheet`。
+6. **单独覆盖。** "要覆盖某个单独的角色吗？"，第一个选项为 `No, write the sheet (Recommended)`，然后每个层级行一个选项，标签中带上该行的当前值，如 `Strongest (<its model ID>)`。选中某行会问要改该行中的哪个角色，然后按[选择单个模型](#选择单个模型)的方式为该角色问一个模型，其当前值放第一位并标注 `(current)`。小组角色则改为按问题 3 到 5 的方式询问其列表的各槽位。每次覆盖之后重新问这个问题，直到答案是 `No, write the sheet`。
 7. **Session hook。** "保留把任务路由到 poteto-mode 的 session hook 吗？"，选项为 `On (default)` 和 `Off`。重跑时，保存的值放第一位并标注 `(current)`。
 8. **默认力度。** "pstack subagent 的默认推理力度？"，第一个选项为 `session (keep the parent's effort)`，然后是 `low`、`medium`、`high`、`xhigh` 和 `max`。它写入 `default effort` 行。重跑时，保存的值放第一位并标注 `(current)`。不要按角色询问力度；角色值上已保存的 `@<level>` 后缀原样保留。
 

@@ -45,7 +45,7 @@ description: 引导用户完成 pstack 安装配置、/poteto-mode，以及为�
 
 `/poteto-mode` 把任务匹配到一个 playbook，把该 playbook 的步骤复制进 todo 列表，并在步骤需要时运行其他 skill。它跳过的步骤会以 `skip: <reason>` 留在列表里。好的 prompt 说明目标，以及如何判定完成。它不罗列 skill，因为手写的步骤序列往往会丢掉或打乱 playbook 本会保留的步骤。在帮忙措辞一条 prompt 之前，先阅读 [`references/prompting.md`](references/prompting.md)。
 
-至于后续任务是否会自动路由，使用[开始安装配置](#get-set-up)下的安装配置和运行时来源。在承诺之前，先确认该安装确实启用了路由。没有自动路由时，每个新任务都要显式调用 `poteto-mode`。对话中途说 "new task" 会让 mode 重新匹配一个新 playbook。关于 subagent 默认值，阅读 [poteto-mode 的 Subagents 一节](../poteto-mode/SKILL.md#subagents)和当前运行时的映射。
+至于后续任务是否会自动路由，使用[开始安装配置](#开始安装配置)下的安装配置和运行时来源。在承诺之前，先确认该安装确实启用了路由。没有自动路由时，每个新任务都要显式调用 `poteto-mode`。对话中途说 "new task" 会让 mode 重新匹配一个新 playbook。关于 subagent 默认值，阅读 [poteto-mode 的 Subagents 一节](../poteto-mode/SKILL.md#subagents)和当前运行时的映射。
 
 ## 挑选 skill
 

@@ -25,7 +25,7 @@ description: "并行派发 N 个 worker，收齐结果，返回一份报告。�
 1. 写明完成谓词，以及 swarm 必须返回的产物或报告。
 2. 选择形态。切分成多个切片，或让 N 个 worker 用相同的 brief 竞速，或两者混合。竞速或混合形态时，在派发之前先声明 `first pass`、`rank all` 或 `best-of`。
 3. N 由用户给定，或根据形态推导。N 是 worker 总数，不是同时运行的数量。
-4. 从 `pstack-models.md` 的 `swarm workers` 行中挑选 worker 模型。如果覆盖表或该行缺失，使用[模型](#models)中的默认值。`auto` 或 `inherit-parent` 时省略 `model`，让 worker 跑在父模型上。如果 `Agent` 工具拒绝了某个 slug，就改用默认值并说明。如果默认值也被拒绝，就从错误信息中选用同系列最接近的有效 slug。模型竞速时，事先写明每一臂的模型。
+4. 从 `pstack-models.md` 的 `swarm workers` 行中挑选 worker 模型。如果覆盖表或该行缺失，使用[模型](#模型)中的默认值。`auto` 或 `inherit-parent` 时省略 `model`，让 worker 跑在父模型上。如果 `Agent` 工具拒绝了某个 slug，就改用默认值并说明。如果默认值也被拒绝，就从错误信息中选用同系列最接近的有效 slug。模型竞速时，事先写明每一臂的模型。
 5. 当 worker 需要写输出时，给每个 worker 分配各自可写的输出位置。当 worker 要验证或度量提交时，每份 brief 都要写明确切的 SHA。度量类 brief 还要写明方法（采样次数、单个样本是什么、顺序）。worker 把两者都记入其结果。
 
 ## Phase B：并行派发

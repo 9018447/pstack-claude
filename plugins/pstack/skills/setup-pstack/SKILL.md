@@ -11,9 +11,9 @@ description: 配置 pstack 各角色使用哪些模型。检测可用模型并�
 
 在 GitHub Copilot 上，按照 [Copilot 安装配置](copilot.md)执行，替代步骤 1、3、4 和 7，以及步骤 6 中的表头。
 
-在其他运行时上，阅读下方[其他运行时](#other-runtimes)一节，了解表放在哪里以及如何加载；步骤是一样的。
+在其他运行时上，阅读下方[其他运行时](#其他运行时)一节，了解表放在哪里以及如何加载；步骤是一样的。
 
-写入当前运行时的按角色模型覆盖表，路径用[其他运行时](#other-runtimes)中所列。每个 pstack skill 都在内联处写明默认模型；覆盖表把这些默认值适配到你实际可用的模型。
+写入当前运行时的按角色模型覆盖表，路径用[其他运行时](#其他运行时)中所列。每个 pstack skill 都在内联处写明默认模型；覆盖表把这些默认值适配到你实际可用的模型。
 
 Claude Code 没有像 Cursor 的 `.mdc` 那样自动应用的 "rules" 机制。Claude Code 的配置目录在设置了 `$CLAUDE_CONFIG_DIR` 时是该变量，否则是 `~/.claude`。本 skill 把它称为 `<config>`。包含是显式的：用户在 `<config>/CLAUDE.md`（或项目里的 `CLAUDE.md`）中加一行，如：
 
@@ -29,7 +29,7 @@ Codex 的主目录在设置了 `$CODEX_HOME` 时是该变量，否则是 `~/.cod
 
 ### 1. 检测可用模型
 
-枚举本会话中 `Agent` 工具的 `model` 参数接受的模型名。那才是可靠的来源。在 Claude Code 上，它们是下方[模型](#models)中列出的系列名，每个运行该系列的当前模型，完整模型 ID 会被拒绝。默认小组名单也在那里列出。该名单是按跨系列多样性挑选的。请用户确认或粘贴他们想用的任何其他 slug。绝不写入一个你未确认可用的真实 slug。别名 `inherit-parent` 和 `auto` 始终有效，即使它们不是检测到的 slug。两者都表示该角色运行在父会话的模型上，`Agent` 调用通过省略 `model` 来表达这一点。
+枚举本会话中 `Agent` 工具的 `model` 参数接受的模型名。那才是可靠的来源。在 Claude Code 上，它们是下方[模型](#模型)中列出的系列名，每个运行该系列的当前模型，完整模型 ID 会被拒绝。默认小组名单也在那里列出。该名单是按跨系列多样性挑选的。请用户确认或粘贴他们想用的任何其他 slug。绝不写入一个你未确认可用的真实 slug。别名 `inherit-parent` 和 `auto` 始终有效，即使它们不是检测到的 slug。两者都表示该角色运行在父会话的模型上，`Agent` 调用通过省略 `model` 来表达这一点。
 
 ### 2. 读取当前状态
 
@@ -39,7 +39,7 @@ Codex 的主目录在设置了 `$CODEX_HOME` 时是该变量，否则是 `~/.cod
 
 展示每个角色及其当前模型，把任何不在检测集合中的真实 slug 标记为需要选择。同时列出步骤 2 丢弃或改写的每一行。询问是照原样接受还是修改特定角色，选项给出检测到的模型加 `inherit-parent` 和 `auto`。优先用 `AskUserQuestion` 而不是自由文本。对于小组角色（arena runners、architect runners、interrogate reviewers），值是一个列表，每个条目跑一个 subagent，别名条目也算，因此列表长度决定数量。`arena cross-judge pool` 也是一个列表，但 Arena 会从中选择一个模型系列尽可能不同于父会话的值。`swarm workers` 是每个 worker 的默认模型，除非竞速或对比按分支指定了别的模型。
 
-然后询问默认推理力度，即 `default effort` 行。它是 `session`（保持父会话的力度），或[模型](#models)中的某个级别。从那里列出的默认值开始。每个不带后缀的角色值都按它运行。然后询问是否有角色要用另一个级别运行。在 Claude Code 上，角色值可以在其 slug 后带一个级别，如 `<slug> @xhigh`；小组条目各自带自己的，如 `<slug> @xhigh, <slug> @max`。每个级别都通过 plugin 的该级别 effort agent 分派，因此该选择无需改变会话即可生效。默认力度则不写后缀。
+然后询问默认推理力度，即 `default effort` 行。它是 `session`（保持父会话的力度），或[模型](#模型)中的某个级别。从那里列出的默认值开始。每个不带后缀的角色值都按它运行。然后询问是否有角色要用另一个级别运行。在 Claude Code 上，角色值可以在其 slug 后带一个级别，如 `<slug> @xhigh`；小组条目各自带自己的，如 `<slug> @xhigh, <slug> @max`。每个级别都通过 plugin 的该级别 effort agent 分派，因此该选择无需改变会话即可生效。默认力度则不写后缀。
 
 ### 4. 选择 session hook 是否为任务路由
 
@@ -47,7 +47,7 @@ Codex 的主目录在设置了 `$CODEX_HOME` 时是该变量，否则是 `~/.cod
 
 ### 5. 校验
 
-写入的每个真实 slug 都必须在检测集合中。`inherit-parent` 和 `auto` 始终通过。校验 slug 时去掉任何 `@<level>` 后缀，级别则对照[模型](#models)中的力度级别。`default effort` 的值是那些级别之一或 `session`。在 Codex 上，级别改为你的 Codex 模型接受的 `reasoning_effort` 值。如果选定的真实 slug 或级别不可用，停下来重新询问。
+写入的每个真实 slug 都必须在检测集合中。`inherit-parent` 和 `auto` 始终通过。校验 slug 时去掉任何 `@<level>` 后缀，级别则对照[模型](#模型)中的力度级别。`default effort` 的值是那些级别之一或 `session`。在 Codex 上，级别改为你的 Codex 模型接受的 `reasoning_effort` 值。如果选定的真实 slug 或级别不可用，停下来重新询问。
 
 ### 6. 写入覆盖表
 

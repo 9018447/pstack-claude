@@ -33,7 +33,7 @@ node <plugin>/skills/reflect/scripts/find-transcript.mjs ~/.claude/projects/<enc
 
 一条消息、三次 `Agent` 调用，`subagent_type: "general-purpose"`，`model` 按下文设置。审查者需要 MCP 访问权限来查询上下文（transcript 中引用的工单、聊天线程、可观测性 trace）。选择能保留 MCP 访问权限的 subagent_type。prompt 中禁止写文件。修改由父 agent 应用。
 
-每个审查者和综合者都对应 `pstack-models.md` 中的一个角色行，以及[模型](#models)一节中的一个默认值。将 `model` 设为该行的值；如果表或行缺失，则用默认值。当值为 `auto` 或 `inherit-parent` 时，不设置 `model`。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明。如果它拒绝默认值，就从其错误信息中选用同系列最接近的有效 slug。
+每个审查者和综合者都对应 `pstack-models.md` 中的一个角色行，以及[模型](#模型)一节中的一个默认值。将 `model` 设为该行的值；如果表或行缺失，则用默认值。当值为 `auto` 或 `inherit-parent` 时，不设置 `model`。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明。如果它拒绝默认值，就从其错误信息中选用同系列最接近的有效 slug。
 
 | 视角 | 角色行 | Prompt 模板 |
 |---|---|---|
@@ -45,7 +45,7 @@ node <plugin>/skills/reflect/scripts/find-transcript.mjs ~/.claude/projects/<enc
 
 ### 3. 综合
 
-一次 `Agent` 调用，`subagent_type: "general-purpose"`，`model` 取自 `reflect judgment, divergent, synthesizer` 行（默认值见[模型](#models)）。选择能保留 MCP 访问权限的 subagent_type。综合者的质量检查包括抽查核实引用，这可能需要 MCP 访问权限。原样使用 `references/synthesizer.md`，并在标记处内联每个审查者的完整输出。综合者返回结构化的 Accepted / Rejected / Backlog 列表。
+一次 `Agent` 调用，`subagent_type: "general-purpose"`，`model` 取自 `reflect judgment, divergent, synthesizer` 行（默认值见[模型](#模型)）。选择能保留 MCP 访问权限的 subagent_type。综合者的质量检查包括抽查核实引用，这可能需要 MCP 访问权限。原样使用 `references/synthesizer.md`，并在标记处内联每个审查者的完整输出。综合者返回结构化的 Accepted / Rejected / Backlog 列表。
 
 ### 4. 结构化强制检查
 

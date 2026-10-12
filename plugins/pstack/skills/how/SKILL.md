@@ -11,7 +11,7 @@ description: "用于 \"how does X work\"、改动某处之前的代码走读，�
 
 探索代码库来回答 "how does X work?" 这类问题。产出高级工程师初接手一个子系统时所需的架构级解释：足以建立起可用的心智模型，又不至于读起来像逐行注释的源码。
 
-下文的每次 spawn 都会指明 `pstack-models.md` 中的一行角色配置，以及[模型](#models)一节中的默认值。将 `model` 设为该行的值；若配置表或该行缺失，则用默认值。当值为 `auto` 或 `inherit-parent` 时，保持 `model` 不设置。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明这一点。如果它连默认值也拒绝，就根据其错误信息改用同一家族中最接近的有效 slug。
+下文的每次 spawn 都会指明 `pstack-models.md` 中的一行角色配置，以及[模型](#模型)一节中的默认值。将 `model` 设为该行的值；若配置表或该行缺失，则用默认值。当值为 `auto` 或 `inherit-parent` 时，保持 `model` 不设置。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明这一点。如果它连默认值也拒绝，就根据其错误信息改用同一家族中最接近的有效 slug。
 
 ## 步骤 1. 评估复杂度
 
@@ -27,7 +27,7 @@ description: "用于 \"how does X work\"、改动某处之前的代码走读，�
 把问题拆解成 2 到 4 个探索角度，每个角度对应子系统的一个独立切面。在单条消息里 spawn 全部 explorer：
 
 - `subagent_type`: `general-purpose`
-- `model`: `how explorer` 那一行，默认值见[模型](#models)
+- `model`: `how explorer` 那一行，默认值见[模型](#模型)
 - `readonly`: `true`
 
 每个 explorer 都使用 `references/explorer-prompt.md` 中的 prompt，并填入它的探索角度。然后转到步骤 3。
@@ -37,7 +37,7 @@ description: "用于 \"how does X work\"、改动某处之前的代码走读，�
 spawn 一个 `Agent` subagent，一轮完成探索和讲解：
 
 - `subagent_type`: `general-purpose`
-- `model`: `how explainer` 那一行，默认值见[模型](#models)
+- `model`: `how explainer` 那一行，默认值见[模型](#模型)
 - `readonly`: `true`
 
 基于 `references/explainer-prompt.md` 构建 prompt，但去掉 explorer 发现部分。转到步骤 4。
@@ -47,7 +47,7 @@ spawn 一个 `Agent` subagent，一轮完成探索和讲解：
 等所有 explorer 返回后，spawn 一个 `Agent` subagent，把它们的发现综合成一份解释：
 
 - `subagent_type`: `general-purpose`
-- `model`: `how explainer` 那一行，默认值见[模型](#models)
+- `model`: `how explainer` 那一行，默认值见[模型](#模型)
 - `readonly`: `true`
 
 基于 `references/explainer-prompt.md` 构建 prompt，填入每个 explorer 的发现。

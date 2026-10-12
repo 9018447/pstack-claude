@@ -33,7 +33,7 @@ description: "在写代码之前勾勒类型、签名和模块结构，然后在
 
 以 design-sketch 任务和 Phase A 的摸底产物运行 **arena** skill。把 `references/runner-prompt.md` 作为每个 runner 的 prompt 传入。每个候选产出一个按 `references/rationale-template.md` 组织的设计包。
 
-runner 取自 `pstack-models.md` 中的 `architect runners` 行，替代 `arena runners` 行。如果表或该行缺失，使用[模型](#models)中的默认值。别名条目和被拒绝条目遵循 **arena** skill Phase A 中的 runner 规则。
+runner 取自 `pstack-models.md` 中的 `architect runners` 行，替代 `arena runners` 行。如果表或该行缺失，使用[模型](#模型)中的默认值。别名条目和被拒绝条目遵循 **arena** skill Phase A 中的 runner 规则。
 
 设计两遍。综合之前要求至少有两个结构上不同的候选，哪怕第一个看起来已经够好。这是 **exhaust-the-design-space** 原则 skill 的具体化。要的是整体形态上的备选，而不是同一个形态内部的点状修补。
 

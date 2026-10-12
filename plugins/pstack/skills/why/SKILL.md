@@ -13,7 +13,7 @@ description: "用于“X 为什么是这样实现的”“我们为什么选了 
 
 与 `how` skill 配套。`how` 回答代码做什么、如何运作；`why` 回答是哪些力量造就了它如今的形态。
 
-下文的每次 spawn 都指明了 `pstack-models.md` 中的一个角色行，以及[模型](#models)一节中的默认值。将 `model` 设为该行的值；如果清单或该行缺失，则设为默认值。当值为 `auto` 或 `inherit-parent` 时，不要设置 `model`。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明这一点。如果它连默认值也拒绝，就从其错误信息中选用同一家族中最接近的有效 slug。
+下文的每次 spawn 都指明了 `pstack-models.md` 中的一个角色行，以及[模型](#模型)一节中的默认值。将 `model` 设为该行的值；如果清单或该行缺失，则设为默认值。当值为 `auto` 或 `inherit-parent` 时，不要设置 `model`。如果 `Agent` 工具拒绝某个 slug，就改用默认值并说明这一点。如果它连默认值也拒绝，就从其错误信息中选用同一家族中最接近的有效 slug。
 
 ## 工作姿态
 
@@ -84,7 +84,7 @@ gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIs
 
 每个 subagent 的配置：
 - `subagent_type`: `general-purpose`
-- `model`: `why investigators` 那一行，默认值见[模型](#models)
+- `model`: `why investigators` 那一行，默认值见[模型](#模型)
 - `readonly`: `false`（agent 模式）。**不要使用 readonly/Ask 模式。**它会剥离 MCP 访问，使依赖 MCP 的调查员完全失效。调查员仍不应写入任何东西。
 
 每位调查员会拿到：
@@ -128,7 +128,7 @@ gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIs
 启动一个综合者 subagent：
 
 - `subagent_type`: `general-purpose`
-- `model`: `why synthesizer` 那一行，默认值见[模型](#models)
+- `model`: `why synthesizer` 那一行，默认值见[模型](#模型)
 - `readonly`: `false`（agent 模式）。综合者的质量检查会抽验引用，这可能需要 MCP 访问权限。Readonly/Ask 模式会剥离 MCP，使这一步失效。
 
 综合者会拿到：
