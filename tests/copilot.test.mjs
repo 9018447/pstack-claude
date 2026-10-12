@@ -59,7 +59,7 @@ describe("copilot-tools.md coverage", () => {
   });
 
   test("every skill with a per-skill note exists and every pointed skill has one or needs none", () => {
-    const table = mapping.slice(mapping.indexOf("## Per-skill notes"), mapping.indexOf("## Vendored scripts"));
+    const table = mapping.slice(mapping.indexOf("## 各 skill 的注意事项"), mapping.indexOf("## 随附脚本"));
     const noted = [...table.matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1]);
     const skills = new Set(skillText.filter(([rel]) => rel.endsWith("/SKILL.md")).map(([rel]) => rel.split("/")[0]));
     for (const name of noted) expect(skills.has(name)).toBe(true);
@@ -90,14 +90,27 @@ describe("Copilot preambles", () => {
     expect(stamped.length).toBeGreaterThan(0);
     for (const [file, lines] of stamped) {
       const text = readFileSync(join(repoRoot, file), "utf8");
-      expect(text).toContain(copilot.preamble);
-      if (lines.includes(codex.preamble)) expect(text).toContain(`${codex.preamble}\n\n${copilot.preamble}\n`);
+      const translated = /\p{Script=Han}/u.test(text);
+      if (!translated) {
+        expect(text).toContain(copilot.preamble);
+        if (lines.includes(codex.preamble)) expect(text).toContain(`${codex.preamble}\n\n${copilot.preamble}\n`);
+      } else {
+        // The fork translates each preamble in the skill's own voice; the
+        // mapping pointers stay, in the same order.
+        const codexAt = text.indexOf("references/codex-tools.md");
+        const copilotAt = text.indexOf("references/copilot-tools.md");
+        expect(copilotAt).toBeGreaterThan(-1);
+        if (lines.includes(codex.preamble)) {
+          expect(codexAt).toBeGreaterThan(-1);
+          expect(copilotAt).toBeGreaterThan(codexAt);
+        }
+      }
     }
   });
 
   test("poteto-mode's Platform Adaptation names the Copilot mapping", () => {
     const text = readFileSync(join(skillsDir, "poteto-mode/SKILL.md"), "utf8");
-    expect(text).toContain("On GitHub Copilot, CLI or app, read [`references/copilot-tools.md`](references/copilot-tools.md)");
+    expect(text).toContain("[`references/copilot-tools.md`](references/copilot-tools.md)");
   });
 });
 
@@ -107,33 +120,34 @@ describe("Copilot setup questions", () => {
   const setupDir = join(skillsDir, "setup-pstack");
   const skill = readFileSync(join(setupDir, "SKILL.md"), "utf8");
   const questions = readFileSync(join(setupDir, "copilot.md"), "utf8");
-  const sequence = questions.slice(questions.indexOf("## Question sequence"));
+  const sequence = questions.slice(questions.indexOf("## 问题顺序"));
   const roles = models.roles.map((r) => r.role);
 
   test("step 6's sheet shape has a line for every role in models.json", () => {
-    const sheetShape = skill.slice(skill.indexOf("### 6. Write the override sheet"), skill.indexOf("### 7."));
+    const sheetShape = skill.slice(skill.indexOf("### 6. 写入覆盖表"), skill.indexOf("### 7. 接入"));
     const shaped = [...sheetShape.matchAll(/^([a-z][a-z ,-]*): /gm)].map((m) => m[1]).filter((r) => r !== "session hook" && r !== "default effort");
     expect(shaped).toEqual(roles);
   });
 
   test("the roles-by-tier table lists every role once, under its tier", () => {
-    const table = questions.slice(questions.indexOf("| Tier | Roles |"), questions.indexOf("## Question sequence"));
-    const rows = [...table.matchAll(/^\| (\w+) \| (.+) \|$/gm)].filter((m) => m[1] !== "Tier");
-    const listed = rows.flatMap((m) => [...m[2].matchAll(/`([^`]+)`/g)].map((r) => [m[1].toLowerCase(), r[1]]));
+    const table = questions.slice(questions.indexOf("| 层级 | 角色 |"), questions.indexOf("## 问题顺序"));
+    const tierOf = { "默认": "default", "最强": "strongest", "小组": "panel" };
+    const rows = [...table.matchAll(/^\| ([^|]+) \| (.+) \|$/gm)].filter((m) => m[1].trim() !== "层级");
+    const listed = rows.flatMap((m) => [...m[2].matchAll(/`([^`]+)`/g)].map((r) => [tierOf[m[1].trim()], r[1]]));
     expect(listed.sort()).toEqual(models.roles.map((r) => [r.tier, r.role]).sort());
   });
 
   test("asks by tier, panel slot, override, and hook, in order", () => {
     const steps = [
-      "0. **Session model.**",
-      "1. **Default model.**",
-      "2. **Strongest model.**",
-      "3. **Panel model 1 of 3**",
-      "4. **More panel models.**",
-      "5. **Vendor check.**",
-      "6. **Overrides.**",
-      "7. **Session hook.**",
-      "8. **Default effort.**",
+      "0. **会话模型。**",
+      "1. **默认模型。**",
+      "2. **最强模型。**",
+      "3. **小组模型 1/3**",
+      "4. **更多小组模型。**",
+      "5. **厂商检查。**",
+      "6. **单独覆盖。**",
+      "7. **Session hook。**",
+      "8. **默认力度。**",
     ];
     const at = steps.map((step) => sequence.indexOf(step));
     expect(at.every((i) => i >= 0)).toBe(true);
@@ -142,7 +156,7 @@ describe("Copilot setup questions", () => {
 
   test("setup runs the vendored sheet check after writing", () => {
     const check = "scripts/check-sheet.sh";
-    expect(questions).toContain(`sh <this skill's directory>/${check}`);
+    expect(questions).toContain(`sh <本 skill 目录>/${check}`);
     expect(existsSync(join(setupDir, check))).toBe(true);
   });
 });

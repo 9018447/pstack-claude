@@ -23,7 +23,7 @@ description: 引导用户完成 pstack 安装配置、/poteto-mode，以及为�
 
 检查会改变答案的状态，且只在确实改变时才提及：
 
-- 对于模型或路由问题，先弄清运行时和安装类型，然后阅读 [`setup-pstack`](../setup-pstack/SKILL.md#other-runtimes) 了解表的位置和该运行时如何加载它。在说明默认值还是覆盖值生效之前，先核对该配置。
+- 对于模型或路由问题，先弄清运行时和安装类型，然后阅读 [`setup-pstack`](../setup-pstack/SKILL.md#其他运行时) 了解表的位置和该运行时如何加载它。在说明默认值还是覆盖值生效之前，先核对该配置。
 - 如果项目没有 `verify` 或 `verify-*` skill 或其他应用测试框架，意味着 agent 没有脚本化的方式驱动应用。当问题涉及证明某个改动有效时，提及 `/create-verification-skill`。
 
 当模型表缺失且这件事要紧时，询问用户是否想现在就为每个角色挑选模型和一个默认 effort。要紧的情形：用户是新手、问题涉及安装配置或成本，或答案取决于哪些模型在跑。每次对话最多问一次。如果需求也不明确，把两个问题一起问。给出两个选项：
@@ -112,7 +112,7 @@ Playbook 是 `/poteto-mode` 内部的步骤列表，不是 skill，因此没有�
 
 pstack 没有规划 skill。Claude Code 的 plan mode 可以与它并行使用。对于跨阶段或堆叠 PR 的工作，让 `/poteto-mode` 出计划会运行 [Multi-phase plan playbook](../poteto-mode/playbooks/multi-phase-plan.md)，它只写计划而不实现。对于设计问题，Prototype playbook 或 `/architect` 会先用代码敲定它。
 
-Principle 是单条规则的 skill，`/poteto-mode` 会阅读它们并在回复中引用。用户很少直接调用某个 principle，而是用名字来施加导向，如 "apply prove it works. show me the real output."。在 Claude Code 上，`principle-*` 叶子不会出现在斜杠菜单中，`/poteto-mode` 按路径读取它们；其他运行时可能把它们列在 skill 选择器里。[Principles 索引](../poteto-mode/SKILL.md#principles)列出了它们。
+Principle 是单条规则的 skill，`/poteto-mode` 会阅读它们并在回复中引用。用户很少直接调用某个 principle，而是用名字来施加导向，如 "apply prove it works. show me the real output."。在 Claude Code 上，`principle-*` 叶子不会出现在斜杠菜单中，`/poteto-mode` 按路径读取它们；其他运行时可能把它们列在 skill 选择器里。[Principles 索引](../poteto-mode/SKILL.md#原则)列出了它们。
 
 ## 修复出问题的运行
 
@@ -120,7 +120,7 @@ Principle 是单条规则的 skill，`/poteto-mode` 会阅读它们并在回复�
 |---|---|
 | mode 在几轮之后不再生效 | 通过"开始安装配置"下的来源检查当前运行时的路由配置。没有自动路由时，每个任务都要显式调用 `poteto-mode`。 |
 | 一个提问被当成了上一个任务的下一步 | 说 "new task"，或说明这一轮不需要 mode。 |
-| 新选的模型没有生效 | 阅读 [setup-pstack](../setup-pstack/SKILL.md#other-runtimes) 和当前运行时的映射，然后核对其表的位置和加载方式。 |
+| 新选的模型没有生效 | 阅读 [setup-pstack](../setup-pstack/SKILL.md#其他运行时) 和当前运行时的映射，然后核对其表的位置和加载方式。 |
 | 运行成本高于预期 | 参见"开始安装配置"下的成本段落。 |
 | 某个 skill 没有自动加载 | 阅读它的 description 和当前运行时的 skill 加载说明。需要时显式调用它；`/poteto-mode` 不会运行每个 skill。 |
 | 并行 agent 互相覆盖 | 给每个 agent 分配自己的 worktree。 |

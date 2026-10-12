@@ -34,7 +34,7 @@ function run(playbooks, { throughSymlink = false, cwd = ".", args = ["."] } = {}
 describe("project playbooks", () => {
   test("a change anchored on a bundled step passes", () => {
     const result = run({
-      "bug-fix.md": '---\nextends: bug-fix\nwhen: Use it for any bug report.\n---\n- **In** "Binary-search the cause": compare with main.\n',
+      "bug-fix.md": '---\nextends: bug-fix\nwhen: Use it for any bug report.\n---\n- **In** "对原因做二分": compare with main.\n',
     });
     expect(result).toEqual({ code: 0, out: "Every project playbook matches this pstack's playbooks.\n" });
   });
@@ -73,14 +73,14 @@ describe("project playbooks", () => {
 
   test("a playbook saved with CRLF line endings passes", () => {
     const result = run({
-      "bug-fix.md": '---\r\nextends: bug-fix\r\nwhen: Use it for any bug report.\r\n---\r\n- **In** "Binary-search the cause": compare with main.\r\n',
+      "bug-fix.md": '---\r\nextends: bug-fix\r\nwhen: Use it for any bug report.\r\n---\r\n- **In** "对原因做二分": compare with main.\r\n',
     });
     expect(result).toEqual({ code: 0, out: "Every project playbook matches this pstack's playbooks.\n" });
   });
 
   test("a playbook saved with a UTF-8 byte-order mark passes", () => {
     const result = run({
-      "bug-fix.md": '\uFEFF---\r\nextends: bug-fix\r\nwhen: Use it for any bug report.\r\n---\r\n- **In** "Binary-search the cause": compare with main.\r\n',
+      "bug-fix.md": '\uFEFF---\r\nextends: bug-fix\r\nwhen: Use it for any bug report.\r\n---\r\n- **In** "对原因做二分": compare with main.\r\n',
     });
     expect(result).toEqual({ code: 0, out: "Every project playbook matches this pstack's playbooks.\n" });
   });

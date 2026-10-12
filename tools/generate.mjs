@@ -98,6 +98,60 @@ export const OWNED_DIRS = [
   `${SKILLS}/poteto-mode/references/licenses`,
 ];
 
+// Paths declared in tools/forks.json, across every component. A declared fork
+// is port-owned text: the generator plans and stamps the English upstream form,
+// so writing it back would clobber the fork. The generator therefore leaves
+// these paths out of its plan, out of the orphan sweep, and out of the
+// stamp-ownership scans; their contracts stay with the fork and with sync.
+export function forkedPaths(root = repo) {
+  try {
+    const registry = JSON.parse(readFileSync(join(root, "tools/forks.json"), "utf8"));
+    return new Set(Object.values(registry).flatMap((entries) => Object.keys(entries)));
+  } catch (err) {
+    if (err.code === "ENOENT") return new Set();
+    throw err;
+  }
+}
+
+// Port-owned translations of generator-written artifacts: the effort agents,
+// the Codex prompt stubs, and the portable-asset copies under poteto-mode's
+// references. They sit in generator-owned directories but carry translated
+// text the plan cannot compute, so the fork maintains them by hand. They
+// cannot be declared in tools/forks.json: sync classes a port-only path (no
+// upstream counterpart) as un-forked and rejects an entry for it.
+const TRANSLATED_PUT_DIRS = [EFFORT_AGENTS, ...PROMPT_RUNTIMES.map((runtime) => runtime.prompts), `${SKILLS}/poteto-mode/references/agents`, `${SKILLS}/poteto-mode/references/licenses`];
+const isTranslatedPut = (rel) => TRANSLATED_PUT_DIRS.some((dir) => rel === dir || rel.startsWith(`${dir}/`));
+// Translated port-only files the generator would otherwise stamp or scan:
+// the runtime tools references, the Copilot setup and session-start hooks,
+// and the port-only skills and references that carry translated text. They
+// have no upstream counterpart, so forks.json cannot declare them (sync
+// classes a port-only path as un-forked and rejects an entry) and the skip
+// is spelled here instead.
+const PORT_ONLY_TRANSLATED = [
+  ...RUNTIMES.map((runtime) => runtime.tools),
+  `${PLUGIN}/hooks/session-start-context.md`,
+  `${PLUGIN}/hooks/session-start-copilot-setup.md`,
+  `${PLUGIN}/hooks/session-start-copilot-sheet.md`,
+  `${PLUGIN}/hooks/session-start-copilot.md`,
+  `${SKILLS}/babysit/SKILL.md`,
+  `${SKILLS}/poteto-mode/references/merge-safety.md`,
+  `${SKILLS}/poteto-mode/references/resume-storage.md`,
+  `${SKILLS}/setup-pstack/copilot.md`,
+];
+// True when the file on disk is a translated copy of something the generator
+// would otherwise write or stamp: it sits in a candidate set above and its
+// text reads as Chinese. The disk check keeps an upstream-shaped English tree
+// fully generator-owned; only a translated tree hands these paths to the fork.
+const hanSchema = /\p{Script=Han}/u;
+const isTranslated = (rel, root = repo) => {
+  if (!isTranslatedPut(rel) && !PORT_ONLY_TRANSLATED.includes(rel)) return false;
+  try {
+    return hanSchema.test(readFileSync(join(root, rel), "utf8"));
+  } catch {
+    return false;
+  }
+};
+
 // Replace the manifest's single "version" value, preserving all formatting.
 // Exactly one "version" field per manifest is a precondition: a second one
 // (say, from a future nested object) would make the blind replace ambiguous,
@@ -914,11 +968,14 @@ export function plan(root, models) {
   // path compose. A put writes a whole file, so it throws rather than replace
   // different text another producer planned.
   const files = {};
+  const forked = forkedPaths(root);
   const current = (rel) => files[rel] ?? read(rel);
   const stamp = (rel, edit) => {
+    if (forked.has(rel) || isTranslated(rel, root)) return;
     files[rel] = edit(current(rel));
   };
   const put = (rel, text) => {
+    if (forked.has(rel) || isTranslated(rel, root)) return;
     if (Object.hasOwn(files, rel) && files[rel] !== text) throw new Error(`${rel} is planned twice with different text`);
     files[rel] = text;
   };
@@ -978,6 +1035,7 @@ function lstatNoSymlinks(root, path) {
 
 export function changes(root, intended) {
   const pending = [];
+  const forked = forkedPaths(root);
   for (const [path, text] of Object.entries(intended.files)) {
     const st = lstatNoSymlinks(root, path);
     if (st && !st.isFile()) throw new Error(`${path} is not a regular file; the generator never overwrites one`);
@@ -988,6 +1046,7 @@ export function changes(root, intended) {
     if (!lstatNoSymlinks(root, dir)) continue;
     for (const entry of readdirSync(join(root, dir)).sort()) {
       const path = `${dir}/${entry}`;
+      if (forked.has(path) || isTranslated(path, root)) continue;
       if (!planned.some((p) => p === path || p.startsWith(`${path}/`))) pending.push({ kind: "remove", path });
     }
   }
@@ -1039,6 +1098,7 @@ export function problems(root, models) {
     }),
   ).filter(Boolean);
   models ??= attempt(() => loadModels(root));
+  const forked = forkedPaths(root);
   const statOf = (rel) => {
     const full = join(pluginRoot, rel);
     if (!existsSync(full) || !pathIsInside(realpathSync(pluginRoot), realpathSync(full))) return null;
@@ -1046,9 +1106,9 @@ export function problems(root, models) {
   };
   if (models) {
     attempt(() => {
-      const strays = markdownFiles(skillsDir).flatMap((full) =>
-        strayModelSlugs(relative(root, full), readFileSync(full, "utf8"), models),
-      );
+      const strays = markdownFiles(skillsDir)
+        .filter((full) => !forked.has(relative(root, full)) && !isTranslated(relative(root, full), root))
+        .flatMap((full) => strayModelSlugs(relative(root, full), readFileSync(full, "utf8"), models));
       if (strays.length) {
         throw new Error(
           `model names outside generator-owned regions (reference the role and its Models section instead):\n` +
@@ -1059,7 +1119,9 @@ export function problems(root, models) {
   }
   attempt(() => {
     const leads = loadLeadLines(root);
-    const strays = markdownFiles(skillsDir).flatMap((full) => {
+    const strays = markdownFiles(skillsDir)
+      .filter((full) => !forked.has(relative(root, full)) && !isTranslated(relative(root, full), root))
+      .flatMap((full) => {
       const file = relative(root, full);
       return readFileSync(full, "utf8")
         .split("\n")

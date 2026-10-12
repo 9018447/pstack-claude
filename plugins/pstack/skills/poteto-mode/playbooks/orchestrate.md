@@ -24,7 +24,7 @@
 
 创建 `~/.claude/orchestrate/<project-slug>/`，在仓库之外、会话之外。store 必须活得比本会话久：程序要跑几天，会话重启是预期内的（见"存活与失败"），而 store 就是复盘材料。会话草稿区再方便也不是候选。它是会话作用域且临时的，重启会把程序的唯一状态一并带走。每个文件有且只有一个写者。owner 发布事实，读取方在读时聚合。簿记使用已安装插件下的 `bun skills/poteto-mode/scripts/orch/orch.ts`（下文写作 `orch`），同时它的规范纯 TSV 与 JSON 在没有 CLI 时也保持可读。
 
-- `preferences.md` 是常设指令登记表：编号行，每行一条约束（模型策略、栈形状和数量、验证门槛、禁区路径、上报策略）。人类裁定按[关于人类决定的断言](../../why/references/epistemics.md#claims-about-human-decisions)保留原始措辞与出处。agent 的解读和原文缺失要标注出来。复制不构成新决定。每次派生和每次 resume 都原样粘贴。指令会在多次 resume 之间衰减，每丢一条都要付一个人工回合。发现自己在复述某条指令时，先追加登记再行动（principle-encode-lessons-in-structure）。
+- `preferences.md` 是常设指令登记表：编号行，每行一条约束（模型策略、栈形状和数量、验证门槛、禁区路径、上报策略）。人类裁定按[关于人类决定的断言](../../why/references/epistemics.md#关于人类裁定的论断)保留原始措辞与出处。agent 的解读和原文缺失要标注出来。复制不构成新决定。每次派生和每次 resume 都原样粘贴。指令会在多次 resume 之间衰减，每丢一条都要付一个人工回合。发现自己在复述某条指令时，先追加登记再行动（principle-encode-lessons-in-structure）。
 - `overview.md` 是持久的 PR 和 issue 数据库。只追加。绝不因单个事件整体重写。
 - `units.tsv` 每单元一行：id、轨道、状态、分支、PR、head SHA、brief 路径。就地更新行。
 - `frontier.json` 是计算出的合并前沿，见"栈安全"。

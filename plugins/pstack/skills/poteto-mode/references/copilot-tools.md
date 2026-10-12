@@ -107,7 +107,7 @@ Claude Code 在 `~/.claude/projects/<encoded-cwd>/` 下按项目各留一个目�
 
 受影响的 skill 入口指向这里。多数 skill 只需上面的表。下面这些还需要一条映射：
 
-| Skill | 在 GitHub Copilot 上 |
+| Skill | On GitHub Copilot |
 |-------|----------------------|
 | `interrogate` | 每位审查者是一次 `task` 调用：`subagent_type` 变为 `agent_type`，`readonly: true` 变为只读 agent 类型（见 Subagent 策略），`model` 来自模型表。保持面板厂商各异。 |
 | `setup-pstack` | 该 skill 的 Other runtimes 表写明 Copilot 表的路径和加载方式。其 [Copilot 设置问题](../../setup-pstack/copilot.md) 从 `task` 工具的 `model` 枚举列出模型，每个档位和面板席位问一个 `ask_user` 问题，按厂商分组，不推荐模型；第一个问题允许只有一个模型的套餐、或不想逐角色选的人，把所有角色跑在会话模型上。角色行完全相同；`session hook` 行同样控制 Copilot 的 hook。 |

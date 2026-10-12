@@ -54,7 +54,7 @@ skill 里写的是 Claude 默认值（code/prose/judgment 的单角色默认模�
 
 ## 会话路由 hook
 
-原生 pstack 插件与 Claude Code 插件捆绑相同的 `SessionStart` 路由指令，macOS 与 Linux 上是 `session-start.sh`，Windows 上是 `session-start.ps1`。用户通过 `/hooks` 信任该 hook 后，Codex 会在启动、resume、clear 和 compact 时运行它。hook 从 Codex 表读取 `session hook`，路径见 [setup-pstack 的 runtime 表](../../setup-pstack/SKILL.md#other-runtimes)；`session hook: off` 会停用注入。
+原生 pstack 插件与 Claude Code 插件捆绑相同的 `SessionStart` 路由指令，macOS 与 Linux 上是 `session-start.sh`，Windows 上是 `session-start.ps1`。用户通过 `/hooks` 信任该 hook 后，Codex 会在启动、resume、clear 和 compact 时运行它。hook 从 Codex 表读取 `session hook`，路径见 [setup-pstack 的 runtime 表](../../setup-pstack/SKILL.md#其他运行时)；`session hook: off` 会停用注入。
 
 只装 skill 的安装不含插件 hook。这种情况下请显式请求 `poteto-mode`，或在 `AGENTS.md` 中加一条常设指令。
 
@@ -73,7 +73,7 @@ skill 里写的是 Claude 默认值（code/prose/judgment 的单角色默认模�
 
 受影响的 skill 入口和可选的 Codex slash 存根都指向这里。多数 skill 只需上面的表。下面这些还需要一条映射：
 
-| Skill | 在 Codex 上 |
+| Skill | On Codex |
 |-------|-------------|
 | `interrogate` | `subagent_type`/`model`/`readonly` 派发字段映射到 `spawn_agent`；替换为你配置的 Codex 模型，并保持评审面板的模型多样性。 |
 | `setup-pstack` | 该 skill 的 Other runtimes 表写明 Codex 表的路径和加载方式；slug 就是你的 Codex 模型（见上面的模型名）。角色行完全相同。 |

@@ -1,4 +1,8 @@
 // Correctness rules only: most skill files are synced from upstream, so style rules would conflict on every sync.
+// MD051 is off: markdownlint strips CJK from heading slugs, so a pure-Chinese
+// heading ("## 模型") slugs to nothing and no fragment can validate, while
+// GitHub — the renderer this fork's links target — keeps the characters
+// ("#模型" works). Fragment validity is enforced on the links job instead.
 {
   "config": {
     "default": false,
@@ -8,7 +12,7 @@
     "MD039": true,
     "MD042": true,
     "MD045": true,
-    "MD051": true,
+    "MD051": false,
     "MD052": true,
     "MD053": true,
     "MD056": true

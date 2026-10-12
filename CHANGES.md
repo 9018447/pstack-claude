@@ -2,6 +2,12 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.83 - reconcile the translation with the generator pipeline
+
+The Simplified Chinese translation joined the upstream-tracking pipeline instead of fighting it. The generator (`tools/generate.mjs`) reads `tools/forks.json` and leaves every declared fork unstamped, unscanned, and out of the orphan sweep, and it skips translated copies of generator-written artifacts (the effort agents, the Codex prompt stubs, the portable-asset copies, and the port-only references and hooks) by content, so an upstream-shaped English tree stays fully generator-owned. All translated files are registered in the fork registry, both sync dry-runs against the pinned upstream SHAs pass, and the per-skill notes table headers (`| Skill | On <runtime> |`) are restored as structural anchors that `loadLeadLines` parses.
+
+Twenty-one fragment links pointing at translated headings were rewritten to their GitHub slugs (`#模型`, `#其他运行时`, `#关于人类裁定的论断` and others). markdownlint drops MD051 because its slugger strips CJK where GitHub keeps it, so no CJK fragment could ever validate there; fragment validity stays with the links job. The test suite's content pins (the port-local skill rules, the Copilot preambles and setup questions, the lead-line and region mechanics, the portable-asset copies) now assert the translated tree. The `Generated files current` and `Fork registry` checks pass again, and the `ci.yml` workflow is re-enabled.
+
 ## 0.9.82 - translate the plugin content to Simplified Chinese
 
 This release translates the pstack plugin's content into Simplified Chinese: every skill (SKILL.md, its references, and the poteto-mode playbooks), the plugin agents, the effort agents, the session-start hooks, and the Codex prompt stubs. The translation is prose-only. Frontmatter keys and `name` values, code blocks, inline code, file paths, commands, URLs, verbatim trigger phrases, example quotes, and model slugs stay in English, so skill dispatch, path-based loading, and script behavior are unchanged.

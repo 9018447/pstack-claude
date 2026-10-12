@@ -84,7 +84,7 @@ pstack Pi 扩展会在每次 agent 启动时把 poteto-mode 的路由指令（�
 
 没有任何 skill 文件带有 Pi 相关行。poteto-mode 的平台适配一节会指向这里一次，扩展的系统 prompt 在每个会话都指向这里，所以在照某个 skill 行事之前，先读它在表中的那一行。多数 skill 只需上面的表。下面这些还需要一条映射：
 
-| Skill | 在 Pi 上 |
+| Skill | On Pi |
 |-------|----------|
 | `poteto-mode` | todolist 退化为 `todo.md`，Subagents 默认值按上面的 Subagent 策略映射。Eval 和 Session pickup playbook 从 Pi sessions 目录读转录（见工具操作）。 |
 | `interrogate` | 审查者通过 `agent` 派发，`subagent_type`、`model` 和 `readonly` 照旧（见 Subagent 策略）。保持面板用彼此不同的模型（见模型名）。 |

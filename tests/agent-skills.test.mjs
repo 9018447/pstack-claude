@@ -213,10 +213,16 @@ describe("shared Agent Skills tree", () => {
     }
   });
 
-  test("the plan copies each portable asset from its source into a directory it owns", () => {
+  test("the plan copies each untranslated portable asset from its source into a directory it owns", () => {
     const { files, ownedDirs } = plan(repoRoot);
     for (const { source, target } of PORTABLE_ASSETS) {
-      expect(files[`plugins/pstack/skills/${target}`]).toBe(readFileSync(join(repoRoot, source), "utf8"));
+      const destination = `plugins/pstack/skills/${target}`;
+      const translated = /\p{Script=Han}/u.test(readFileSync(join(repoRoot, destination), "utf8"));
+      if (translated) {
+        expect(Object.hasOwn(files, destination)).toBe(false);
+      } else {
+        expect(files[destination]).toBe(readFileSync(join(repoRoot, source), "utf8"));
+      }
       expect(ownedDirs).toContain(`plugins/pstack/skills/${dirname(target)}`);
     }
   });

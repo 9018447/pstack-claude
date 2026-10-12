@@ -139,7 +139,7 @@ function context(out, starts) {
   expect(additionalContext.startsWith(mandate.slice(0, at))).toBe(true);
   expect(additionalContext.endsWith(`\n${mandate.slice(at)}`)).toBe(true);
   const notes = additionalContext.slice(at, additionalContext.length - mandate.length + at - 1);
-  expect(notes.startsWith("\nOn GitHub Copilot, load pstack skills")).toBe(true);
+  expect(notes.startsWith("\n在 GitHub Copilot 上")).toBe(true);
   for (const block of notes.split("\n\n").slice(2)) expect(starts.some((s) => block.startsWith(s))).toBe(true);
   return mandate;
 }
@@ -241,7 +241,7 @@ describe("Copilot SessionStart context", () => {
 
   test("the role-skill line names the skills that dispatch on role models", () => {
     const skills = [...new Set(models.roles.map((r) => r.skill))].sort();
-    expect(copilotContext(null)).toContain(`Skills that dispatch on role models: ${skills.map((s) => `\`${s}\``).join(", ")}.`);
+    expect(copilotContext(null)).toContain(`按角色模型分派的 skill：${skills.map((s) => `\`${s}\``).join("、")}。`);
   });
 
   test("each runtime reads only its own sheet", () => {

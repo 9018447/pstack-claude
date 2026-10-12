@@ -1,6 +1,6 @@
 # 在 GitHub Copilot 上安装配置 pstack
 
-在 GitHub Copilot 上，本文件替代 [setup-pstack](SKILL.md) 步骤 1、3、4 中的模型、力度和 hook 问题，步骤 6 中的表头，以及步骤 7。步骤 2、5、8、9 仍然适用。pstack 不附带 Copilot 模型默认值，因此表中的每个模型都来自用户的回答。绝不替用户挑一个他们没有选过的模型，也绝不把[模型](SKILL.md#models)中的 Claude Code 名称或步骤 6 的值写进 Copilot 表。
+在 GitHub Copilot 上，本文件替代 [setup-pstack](SKILL.md) 步骤 1、3、4 中的模型、力度和 hook 问题，步骤 6 中的表头，以及步骤 7。步骤 2、5、8、9 仍然适用。pstack 不附带 Copilot 模型默认值，因此表中的每个模型都来自用户的回答。绝不替用户挑一个他们没有选过的模型，也绝不把[模型](SKILL.md#模型)中的 Claude Code 名称或步骤 6 的值写进 Copilot 表。
 
 在至少不弱于 gpt-5.4-mini 或 Sonnet 级 Claude 模型上运行安装配置。在 Haiku 级模型上，冒烟测试中约一半的安装配置会替用户选中他们从未选过的模型。
 
@@ -30,7 +30,7 @@ Per-role model choices for pstack skills on GitHub Copilot, written by setup-pst
 
 ## 检测模型
 
-检测集合就是 `task` 工具的 `model` 枚举，完整 ID 与枚举所列一字不差。绝不把某个 ID 缩写成系列名。如果本会话没有 `task` 工具或其枚举不可见，就把每个角色都写 `inherit-parent`，跳过模型问题，并告诉用户在带 `task` 工具的会话中重跑 `setup-pstack`。[模型](SKILL.md#models)中的 Claude Code 名称和步骤 6 表形态中的值都不是 Copilot 模型 ID；绝不把它们写进 Copilot 表。
+检测集合就是 `task` 工具的 `model` 枚举，完整 ID 与枚举所列一字不差。绝不把某个 ID 缩写成系列名。如果本会话没有 `task` 工具或其枚举不可见，就把每个角色都写 `inherit-parent`，跳过模型问题，并告诉用户在带 `task` 工具的会话中重跑 `setup-pstack`。[模型](SKILL.md#模型)中的 Claude Code 名称和步骤 6 表形态中的值都不是 Copilot 模型 ID；绝不把它们写进 Copilot 表。
 
 按厂商把检测到的 ID 分组，依据是每个 ID 第一个连字符之前的文本。`claude` 是 Claude，`gpt` 是 GPT，`gemini` 是 Gemini，`grok` 是 Grok，`kimi` 是 Kimi，其他任何 ID 归入 Other。同一厂商内保持枚举顺序。
 

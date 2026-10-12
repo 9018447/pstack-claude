@@ -55,7 +55,8 @@ test('publishes a note linking an artifact with a parenthesized angle-bracket de
   assert.equal(run('read').value.checkpoint.artifacts[0].path, artifact);
 }));
 
-const storage = readFileSync(new URL('../plugins/pstack/skills/poteto-mode/references/resume-storage.md', import.meta.url), 'utf8');
+// resume-storage.md is translated; the rule's verbatim home is the script that prints it.
+const resumeScript = readFileSync(new URL('../plugins/pstack/skills/poteto-mode/scripts/resume.mjs', import.meta.url), 'utf8');
 function publishNote(run, text, artifacts, unregistered = []) {
   const directory = run('begin').value.directory;
   const resume = join(directory, 'resume.md');
@@ -77,7 +78,7 @@ for (const [form, text, artifacts, unregistered, names] of [
   assert.equal(result.status, 1);
   assert.ok(result.value.detail.includes(names), result.value.detail);
   const rule = result.value.detail.slice(result.value.detail.indexOf('Link each local file'));
-  assert.ok(rule.startsWith('Link each local file') && storage.includes(rule), result.value.detail);
+  assert.ok(rule.startsWith('Link each local file') && resumeScript.includes(rule), result.value.detail);
 }));
 
 test('publishes a note that also links URLs and an anchor', () => fixture(({ run }) => {

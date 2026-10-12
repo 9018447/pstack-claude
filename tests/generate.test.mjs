@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -99,8 +99,11 @@ describe("regions", () => {
       roles: models.roles.map((r) => ({ ...r, models: [`marker-${r.skill}`] })),
     };
     for (const skill of new Set(models.roles.map((r) => r.skill))) {
+      // Translated SKILL.mds are fork-skipped, so the render contract runs
+      // on an upstream-shaped body carrying both anchors.
       const file = `plugins/pstack/skills/${skill}/SKILL.md`;
-      const stamped = applyRegions(file, readFileSync(join(repoRoot, file), "utf8"), marked);
+      const text = `# ${skill}\n\n## Models\n\nstale\n\n| Subagent | Default model |\n| --- | --- |\n| Reviewer A | \`x\` |\n\n## Reasoning effort\n`;
+      const stamped = applyRegions(file, text, marked);
       expect(stamped).toContain(`\`marker-${skill}\``);
       expect(stamped).toContain("`marker-effort`");
     }
@@ -529,16 +532,12 @@ describe("lead lines", () => {
   });
 
   test("a prompt stub repeats the codex-tools.md pointer only when its skill lacks the stamped preamble", () => {
-    const { files } = plan(repoRoot);
-    const stubs = Object.keys(files).filter((rel) => rel.startsWith("plugins/pstack/.codex-plugin/prompts/"));
-    const pointsAtMapping = (rel) => files[rel].includes("codex-tools.md");
-    const carriesPreamble = (rel) => {
-      const skill = `plugins/pstack/skills/${basename(rel, ".md")}/SKILL.md`;
-      return readFileSync(join(repoRoot, skill), "utf8").includes("On Codex, read the [platform mapping]");
-    };
-    expect(stubs.filter(carriesPreamble).length).toBeGreaterThan(0);
-    expect(stubs.filter((rel) => !carriesPreamble(rel)).length).toBeGreaterThan(0);
-    for (const rel of stubs) expect({ rel, points: pointsAtMapping(rel) }).toEqual({ rel, points: !carriesPreamble(rel) });
+    // Translated stubs are fork-owned and out of the plan, so the pointer
+    // contract runs on the renderer directly.
+    const withPreamble = promptStub({ name: "how", menu: "m" }, codex, { preamble: codex.preamble });
+    const without = promptStub({ name: "tdd", menu: "m" }, codex, {});
+    expect(withPreamble.includes("codex-tools.md")).toBe(false);
+    expect(without.includes("codex-tools.md")).toBe(true);
   });
 });
 
@@ -614,9 +613,20 @@ describe("plan, changes, apply", () => {
     return dir;
   };
   const snapshot = (dir) => Object.fromEntries(walk(dir).map((path) => [path, readFileSync(path, "utf8")]));
+  // A declared fork is skipped by the plan even when its disk text is
+  // upstream-shaped English; tests that exercise the stamp mechanics on a
+  // path withdraw its declaration first.
+  const unfork = (root, rel) => {
+    const registryPath = join(root, "tools/forks.json");
+    const registry = JSON.parse(readFileSync(registryPath, "utf8"));
+    for (const entries of Object.values(registry)) delete entries[rel];
+    writeFileSync(registryPath, JSON.stringify(registry, null, 2) + "\n");
+  };
   const quiet = { log: () => {} };
-  const STUB = "plugins/pstack/.codex-plugin/prompts/tdd.md";
-  const STRAY = "plugins/pstack/effort-agents/stray.md";
+  // Translated prompt stubs and effort agents are fork-owned and skipped by
+  // the plan, so the mechanics run on an untranslated portable copy.
+  const STUB = "plugins/pstack/skills/poteto-mode/references/licenses/LICENSE";
+  const STRAY = "plugins/pstack/skills/poteto-mode/references/licenses/stray.md";
 
   test("the working tree is what the plan says", () => {
     expect(changes(repoRoot, plan(repoRoot))).toEqual([]);
@@ -780,12 +790,31 @@ describe("plan, changes, apply", () => {
   const generate = (root, ...args) =>
     spawnSync(process.execPath, [join(root, "tools/generate.mjs"), ...args], { encoding: "utf8" });
   const append = (root, rel, text) => writeFileSync(join(root, rel), readFileSync(join(root, rel), "utf8") + text);
-  const STRAY_SLUG = ["plugins/pstack/skills/tdd/SKILL.md", "\nUse claude-opus-99 here.\n"];
+  // tdd/SKILL.md is a translated fork the scans skip; the stray slug lands
+  // in an untranslated sidecar instead.
+  const STRAY_SLUG = ["plugins/pstack/skills/how/stray-slug.md", "\nUse claude-opus-99 here.\n"];
 
   test("plan restores every lead line removed by hand", () => {
     const root = repoCopy();
     const leadFiles = [...loadLeadLines(root)];
     expect(leadFiles.length).toBeGreaterThan(0);
+    // Translated stamped files are fork-skipped, so the restore mechanics run
+    // on upstream-shaped synthetic bodies.
+    const expected = new Map();
+    for (const [file, lines] of leadFiles) {
+      unfork(root, file);
+      const skill = file.split("/").at(-2);
+      // setup-pstack also owns an override-sheet fence region; it sits under
+      // its own heading so the Models render cannot swallow it.
+      const sheet = file.includes("setup-pstack") ? `## Sheet\n\n### Write the override sheet\n\n\`\`\`markdown\nx\n\`\`\`\n\n` : "";
+      const body =
+        `---\nname: ${skill}\ndescription: synthetic body for the stamp mechanics\n---\n# ${file}\n\n${lines.join("\n\n")}\n\n` +
+        `## Models\n\nx\n\n| Subagent | Default model |\n| --- | --- |\n| Reviewer A | \`x\` |\n\n${sheet}## Reasoning effort\n\nbody\n`;
+      writeFileSync(join(root, file), body);
+      const planned = plan(root).files[file];
+      expect(typeof planned).toBe("string");
+      expected.set(file, planned);
+    }
     for (const [file, lines] of leadFiles) {
       for (const line of lines) {
         const text = readFileSync(join(root, file), "utf8");
@@ -794,17 +823,24 @@ describe("plan, changes, apply", () => {
       }
     }
     const { files } = plan(root);
-    for (const [file] of leadFiles) expect(files[file]).toBe(readFileSync(join(repoRoot, file), "utf8"));
+    for (const [file] of leadFiles) expect(files[file]).toBe(expected.get(file));
   });
 
   test("plan converges a duplicated lead line, so --check flags the file as stale", () => {
     const root = repoCopy();
     const file = "plugins/pstack/skills/how/SKILL.md";
-    const original = readFileSync(join(root, file), "utf8");
-    expect(original).toContain(`\n\n${codex.preamble}\n`);
-    writeFileSync(join(root, file), original.replace(`\n\n${codex.preamble}\n`, `\n\n${codex.preamble}\n${codex.preamble}\n`));
+    // The repo copy is translated and fork-skipped; withdraw the declaration
+    // and stamp an upstream-shaped body instead.
+    unfork(root, file);
+    writeFileSync(
+      join(root, file),
+      `---\nname: how\ndescription: synthetic body for the stamp mechanics\n---\n# how\n\n${codex.preamble}\n\n## Models\n\nx\n\n## Reasoning effort\n\ny\n`,
+    );
+    const stamped = plan(root).files[file];
+    expect(stamped).toContain(`\n\n${codex.preamble}\n`);
+    writeFileSync(join(root, file), stamped.replace(`\n\n${codex.preamble}\n`, `\n\n${codex.preamble}\n${codex.preamble}\n`));
     const intended = plan(root);
-    expect(intended.files[file]).toBe(original);
+    expect(intended.files[file]).toBe(stamped);
     expect(changes(root, intended)).toEqual([{ kind: "write", path: file }]);
   });
 
@@ -817,14 +853,21 @@ describe("plan, changes, apply", () => {
       join(root, manifest),
       JSON.stringify({ ...JSON.parse(text(manifest)), version: "0.0.1", agents: [] }, null, 2) + "\n",
     );
+    // how/SKILL.md is translated and fork-skipped; withdraw the declaration
+    // and compose the two producers on an upstream-shaped body instead.
+    unfork(root, skill);
+    const base = `---\nname: how\ndescription: synthetic body for the stamp mechanics\n---\n# how\n\n${leads.get(skill)[0]}\n\n## Models\n\n- how explorer: stale\n\n## Reasoning effort\n\ny\n`;
+    writeFileSync(join(root, skill), base);
+    const expected = plan(root).files[skill];
     writeFileSync(
       join(root, skill),
-      text(skill)
+      expected
         .replace(`\n\n${leads.get(skill)[0]}\n`, "\n")
         .replace(/^- how explorer: .*$/m, "- how explorer: stale"),
     );
     const { files } = plan(root);
-    for (const rel of [manifest, skill]) expect(files[rel]).toBe(readFileSync(join(repoRoot, rel), "utf8"));
+    expect(files[manifest]).toBe(readFileSync(join(repoRoot, manifest), "utf8"));
+    expect(files[skill]).toBe(expected);
   });
 
   test("plan refuses a path two producers write whole with different text", () => {
@@ -846,23 +889,22 @@ describe("plan, changes, apply", () => {
 
   test("problems reports a lead line in a file that does not own it", () => {
     const root = repoCopy();
-    append(root, "plugins/pstack/skills/tdd/SKILL.md", `\n${codex.preamble}\n`);
-    const codexTools = "plugins/pstack/skills/poteto-mode/references/codex-tools.md";
-    writeFileSync(join(root, codexTools), readFileSync(join(root, codexTools), "utf8").replace(/^\| `why` \|.*\n/m, ""));
+    const stray = "plugins/pstack/skills/how/stray-lead.md";
+    writeFileSync(join(root, stray), `# stray\n\n${codex.preamble}\n`);
     const failures = problems(root).filter((f) => f.startsWith("generator-owned lead lines"));
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toContain("\nplugins/pstack/skills/why/SKILL.md:");
-    expect(failures[0]).toContain("\nplugins/pstack/skills/tdd/SKILL.md:");
+    expect(failures[0]).toContain(`\n${stray}:`);
   });
 
   test("problems reports every broken contract, and --check prints each and exits 1", () => {
     const root = repoCopy();
-    append(root, ...STRAY_SLUG);
+    mkdirSync(dirname(join(root, STRAY_SLUG[0])), { recursive: true });
+    writeFileSync(join(root, STRAY_SLUG[0]), STRAY_SLUG[1]);
     append(root, "plugins/pstack/skills/deslop/SKILL.md", "\n[gone](missing.md)\n");
     append(root, "plugins/pstack/skills/unslop/SKILL.md", '\nsubagent_type: "poteto-agent"\n');
     const failures = problems(root);
     expect(failures).toEqual([
-      expect.stringContaining("plugins/pstack/skills/tdd/SKILL.md:"),
+      expect.stringContaining("plugins/pstack/skills/how/stray-slug.md:"),
       "invalid local markdown links:\ndeslop/SKILL.md -> missing.md (missing)",
       expect.stringContaining("skills/unslop/SKILL.md:"),
     ]);
@@ -873,12 +915,10 @@ describe("plan, changes, apply", () => {
 
   test("a write run regenerates before it validates, so a slug left only in a stale copy passes", () => {
     const root = repoCopy();
-    const copy = "plugins/pstack/skills/poteto-mode/references/agents/comment-sicko.md";
+    const copy = "plugins/pstack/skills/poteto-mode/references/licenses/LICENSE";
     append(root, copy, "\nUse claude-opus-99 here.\n");
     expect(generate(root).status).toBe(0);
-    expect(readFileSync(join(root, copy), "utf8")).toBe(
-      readFileSync(join(root, "plugins/pstack/agents/comment-sicko.md"), "utf8"),
-    );
+    expect(readFileSync(join(root, copy), "utf8")).toBe(readFileSync(join(root, "LICENSE"), "utf8"));
   });
 
   test("--check reports a symlink at a planned path alongside the other failures and writes nothing", () => {
@@ -887,7 +927,8 @@ describe("plan, changes, apply", () => {
     writeFileSync(outside, "original");
     rmSync(join(root, STUB));
     symlinkSync(outside, join(root, STUB));
-    append(root, ...STRAY_SLUG);
+    mkdirSync(dirname(join(root, STRAY_SLUG[0])), { recursive: true });
+    writeFileSync(join(root, STRAY_SLUG[0]), STRAY_SLUG[1]);
     const check = generate(root, "--check");
     expect(check.status).toBe(1);
     expect(check.stderr).toContain(`FAIL: ${STUB} is a symlink; the generator never writes through one\n`);
@@ -919,12 +960,13 @@ describe("plan, changes, apply", () => {
   test("problems reports a malformed Codex manifest as one failure and still runs the other checks", () => {
     const root = repoCopy();
     const manifest = "plugins/pstack/.codex-plugin/plugin.json";
-    append(root, ...STRAY_SLUG);
+    mkdirSync(dirname(join(root, STRAY_SLUG[0])), { recursive: true });
+    writeFileSync(join(root, STRAY_SLUG[0]), STRAY_SLUG[1]);
     for (const text of [readFileSync(join(root, manifest), "utf8") + "}\n", "null\n"]) {
       writeFileSync(join(root, manifest), text);
       expect(problems(root)).toEqual([
         expect.stringContaining(`${manifest}: `),
-        expect.stringContaining("plugins/pstack/skills/tdd/SKILL.md:"),
+        expect.stringContaining("plugins/pstack/skills/how/stray-slug.md:"),
       ]);
     }
   });

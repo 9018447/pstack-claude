@@ -101,9 +101,9 @@ session hook: on
 | 运行时 | 表 | 加载方式 | 列出模型 | 状态 |
 | --- | --- | --- | --- | --- |
 | Claude Code | `<config>/pstack-models.md` | `<config>/CLAUDE.md` 中的 `@<config>/pstack-models.md` | `Agent` 工具的 model 参数 | 已实机验证 |
-| Codex | `<codex-home>/pstack-models.md` | 模型行：粘贴到 `<codex-home>/AGENTS.md`；hook 设置：由 plugin 读取 | 你配置的 Codex 模型，见 [codex-tools.md](../poteto-mode/references/codex-tools.md#model-names) | hook 契约已测试；发现已验证 |
-| Pi | Pi agent 目录中的 `pstack-models.md`，即 `$PI_CODING_AGENT_DIR` 或 `~/.pi/agent` | 由 pstack Pi 扩展读取，模型行和 hook 设置都读；没有 include 行 | `pi --list-models`，见 [pi-tools.md](../poteto-mode/references/pi-tools.md#model-names) 及其 `setup-pstack` 说明 | 扩展契约已离线测试；实机结果见仓库的 `docs/pi-equivalence.md` |
-| GitHub Copilot（CLI 和应用） | `${COPILOT_HOME:-~/.copilot}/pstack-models.md` | plugin hook 检查它并在会话开始时注入其角色行；仅 skills 安装用 `view` 读取 | `task` 工具的 `model` 枚举，见 [copilot-tools.md](../poteto-mode/references/copilot-tools.md#model-names) | hook 契约已测试；CLI 安装已冒烟测试 |
+| Codex | `<codex-home>/pstack-models.md` | 模型行：粘贴到 `<codex-home>/AGENTS.md`；hook 设置：由 plugin 读取 | 你配置的 Codex 模型，见 [codex-tools.md](../poteto-mode/references/codex-tools.md#模型名) | hook 契约已测试；发现已验证 |
+| Pi | Pi agent 目录中的 `pstack-models.md`，即 `$PI_CODING_AGENT_DIR` 或 `~/.pi/agent` | 由 pstack Pi 扩展读取，模型行和 hook 设置都读；没有 include 行 | `pi --list-models`，见 [pi-tools.md](../poteto-mode/references/pi-tools.md#模型名) 及其 `setup-pstack` 说明 | 扩展契约已离线测试；实机结果见仓库的 `docs/pi-equivalence.md` |
+| GitHub Copilot（CLI 和应用） | `${COPILOT_HOME:-~/.copilot}/pstack-models.md` | plugin hook 检查它并在会话开始时注入其角色行；仅 skills 安装用 `view` 读取 | `task` 工具的 `model` 枚举，见 [copilot-tools.md](../poteto-mode/references/copilot-tools.md#模型名) | hook 契约已测试；CLI 安装已冒烟测试 |
 | opencode | `~/.config/opencode/pstack-models.md` | 把该路径加入 `opencode.json` 的 `instructions` 数组 | 会话中的 `models` 斜杠命令 | 来自公开文档，无实机会话 |
 | Gemini CLI | `~/.gemini/pstack-models.md` | `~/.gemini/GEMINI.md` 中的 `@~/.gemini/pstack-models.md` | 会话中的 `model` 斜杠命令 | 来自公开文档，无实机会话 |
 | Prime Agent | 无文档记载的表路径；模型由 Prime 的配置选择 | | | 无实机会话 |

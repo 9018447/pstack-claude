@@ -59,6 +59,6 @@ describe("before_agent_start", () => {
   test("the tool mapping pointer names the installed pi-tools.md, which exists", async () => {
     const { pi, ctx } = setup();
     expect((await sectionsAfterStart(pi, ctx))["pstack-pi-tools"]).toContain(piTools);
-    expect(readFileSync(piTools, "utf8")).toContain("# Pi tool mapping");
+    expect(readFileSync(piTools, "utf8")).toContain("# pstack 的 Pi 工具映射");
   });
 });
