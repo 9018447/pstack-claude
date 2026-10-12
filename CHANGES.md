@@ -2,6 +2,12 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.82 - translate the plugin content to Simplified Chinese
+
+This release translates the pstack plugin's content into Simplified Chinese: every skill (SKILL.md, its references, and the poteto-mode playbooks), the plugin agents, the effort agents, the session-start hooks, and the Codex prompt stubs. The translation is prose-only. Frontmatter keys and `name` values, code blocks, inline code, file paths, commands, URLs, verbatim trigger phrases, example quotes, and model slugs stay in English, so skill dispatch, path-based loading, and script behavior are unchanged.
+
+The translation forks the whole skill tree by content. The generator's stamps, fragment anchors, and the fork registry now diverge from the upstream-tracking pipeline, so the `Generated files current` and `Fork registry` checks are expected to fail on this fork until the divergence is reconciled by hand.
+
 ## 0.9.81 - inspect terminal PRs and recover orphaned Pi agents
 
 `ship-pr inspect` reads closed and merged PRs after their base branch is deleted, using the stored base commit when the current branch is gone. Open PRs still require the current base target, and cancellation refuses a closed or merged PR before changing anything.
