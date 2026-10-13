@@ -2,6 +2,10 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.85 - dispatch arena and swarm through acpx instead of subagents
+
+The arena and swarm skills dispatch workers, candidates, and the cross-judge through the `acpx` CLI instead of Claude Code subagents, and drop the `pstack-models.md` model/effort machinery: the per-skill 模型 and 推理力度 sections, the platform-mapping pointers at the top, and the per-step model fallback ladders. Dispatch is background Bash — one prompt file per candidate/worker, `--cwd` pinned to the location assigned in framing, logs under `.agent-results/`, each completion confirmed by exit code plus the `[done] end_turn` marker in the log. models.json keeps its arena/swarm roles untouched (generator input, upstream-shaped); the two skills simply no longer read them.
+
 ## 0.9.84 - rewrite the bare-fragment links the first pass missed
 
 The anchor rewrite covered links with a path but missed bare same-file fragments (`(#models)`, `(#shape)`, `(#choosing-one-model)`, `(#get-set-up)`, `(#other-runtimes)`): the link matcher required a target before the `#`. This release rewrites the 22 remaining ones to the GitHub slugs of the translated headings, verified against each target file's headings.

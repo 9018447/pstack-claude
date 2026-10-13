@@ -5,10 +5,6 @@ description: "针对同一个任务并行生成 N 个候选，选出一个基底
 
 # Arena
 
-在 Codex 上，执行本 skill 前先阅读[平台映射](../poteto-mode/references/codex-tools.md)，包括其中针对各 skill 的说明。
-
-在 GitHub Copilot 上，执行本 skill 前先阅读[平台映射](../poteto-mode/references/copilot-tools.md)，包括其中针对各 skill 的说明。
-
 对同一个任务并行派发 N 次尝试。从头到尾读完每一个候选。选最强者作为基底。把其他候选中最好的想法嫁接进来。验证综合后的结果。
 
 ## 开始
@@ -28,20 +24,20 @@ N 个候选将收到同一个 prompt，所以 prompt 就是契约。
 
 1. 写明每个候选要产出的产物。
 2. 制定评分标准。描述*这个*任务上的成功是什么样子，然后把它拆成 3-6 条具体、可打分的标准。评分标准是 Phase D 中挑选者的工具。候选只看得到任务本身。
-3. 选定 runner。使用 `pstack-models.md` 中的 `arena runners` 行。如果覆盖表或该行缺失，就按[模型](#模型)中的默认值各跑一个。该行或交叉评判行中的 `auto` 或 `inherit-parent` 条目表示父模型，因此对它省略 `model`。如果 `Agent` 工具拒绝了某个已配置的条目，就让该席位改跑其所属系列的默认模型，并说明这一点。系列按模型名划分，如 Opus、Fable 或 Sonnet。没有系列匹配时，使用[模型](#模型)中该单一角色的默认值。如果默认值也被拒绝，就从错误信息中选用同系列最接近的有效 slug。当 arena 覆盖多个设计方向时，多派几个。当工作主要受生成能力制约而非对判断敏感时，用同一个模型跑 N 次。
+3. 定 N。当 arena 覆盖多个设计方向时，多派几个。
 4. 分配输出路径。每个候选写到自己的位置（可能的话用 git 工作树，否则用 `/tmp/arena-<slug>/candidate-<n>/`），遵循 **separate-before-serializing-shared-state** 原则 skill。
 
 ## Phase B：并行派发
 
-在一条消息里以 `run_in_background: true` 生成全部 N 个 subagent，每个都带上任务、共享依据材料的路径、自己的输出路径，以及产出产物并附一段简短理由的指令。
+在一条消息里通过 Bash 以 `run_in_background: true` 调用 `acpx`，并行派发全部 N 个候选。命令形制按全局 CLAUDE.md 的 acpx 派发约定：每个候选一份 prompt 文件，`--cwd` 指向它在框定阶段分到的输出位置，日志经 `tee` 落到 `.agent-results/`。
 
-每份理由要写明该候选考虑过哪些备选方案、放弃了什么。
+每个候选的 brief 带上任务、共享依据材料的路径、自己的输出路径，以及产出产物并附一段简短理由的指令。每份理由要写明该候选考虑过哪些备选方案、放弃了什么。
 
-如果某个候选没有产出，就以 N-1 继续，并在综合记录中记下这次缺席。
+每个后台命令退出后，检查退出码并从日志确认 `[done] end_turn`。如果某个候选没有产出，就以 N-1 继续，并在综合记录中记下这次缺席。
 
 ## Phase C：交叉评判
 
-等 Phase B 的全部候选完成后，从 `pstack-models.md` 的 `arena cross-judge pool` 行中选一个模型。如果覆盖表或该行缺失，就从[模型](#模型)的 runner 默认值中选。优先选与父模型不同的模型系列。在该模型上生成一个只读的评判 subagent。它看到评分标准和以路径标签标识的各个候选，对每条标准打分，并推荐一个基底及其理由。它与父线程在 Phase D 的阅读并行，而不是与候选本身并行。候选还在写的时候，不要生成评判者。
+等 Phase B 的全部候选完成后，通过 `acpx` 派发一个只读的评判 agent。它看到评分标准和以路径标签标识的各个候选，对每条标准打分，并推荐一个基底及其理由。它与父线程在 Phase D 的阅读并行，而不是与候选本身并行。候选还在写的时候，不要派发评判者。
 
 ## Phase D：挑选基底
 
@@ -72,14 +68,3 @@ N 个候选将收到同一个 prompt，所以 prompt 就是契约。
 ## 产出
 
 一份综合产物。旁边附一份简短的综合说明，写明基底、各处嫁接（及其来源候选）、被拒绝的内容、缺席的候选（如有）以及验证结果。
-
-## 模型
-
-角色默认值，由 `plugins/pstack/models.json` 生成（在该文件中修改，然后重新运行 `tools/generate.mjs`）。`pstack-models.md` 覆盖表中匹配的角色行会在运行时覆盖各项；`/setup-pstack` 负责写入它，并按运行时列出其路径。
-
-- arena runners: `opus`, `fable`, `sonnet`, `haiku`
-- arena cross-judge pool: `opus`, `fable`, `sonnet`, `haiku`
-
-## 推理力度
-
-覆盖表中的角色值可以在模型名后附加推理力度，如 `opus @xhigh`。Claude Code 上的级别：`low`、`medium`、`high`、`xhigh`、`max`。哪些级别可用取决于模型。不带 `@` 的值采用表中的 `default effort` 行——一个级别或 `session`；表没有该行时用 `session`。`session` 不设置力度，因此按常规方式分派。读取模型前先去掉后缀：`inherit-parent` 或 `auto` 在任何级别下都仍省略 `model`，模型名则照常作为 `model` 传入。在 Claude Code 上，一个级别会从你本要使用的 `subagent_type` 中选出一个 effort agent。`pstack:poteto-agent` 变为 `subagent_type: "pstack:poteto-agent-<level>"`。`general-purpose` 或未指定 `subagent_type` 时，变为 `subagent_type: "pstack:effort-<level>"`。effort agent 只设置 `effort`，因此你传入的模型仍决定实际模型。在 Codex 上，把级别作为 `spawn_agent` 的 `reasoning_effort` 传入，并保留常规指令。
